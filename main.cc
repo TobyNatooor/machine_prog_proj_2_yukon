@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #define FILE_NAME "cards.txt"
 #define CARDS_NUM 52
@@ -17,11 +18,11 @@ int display_game(card_llist columns[], card_llist foundations[]);
 int arrange_cards(card_llist columns[], card_llist foundations[]);
 int load_cards_from_file(card_llist columns[], card_llist foundations[]);
 // int load_cards_from_array(card_llist columns[], card_llist foundations[]);
-int user_input(card_llist columns[], card_llist foundations[]);
 card_llist *get_last_card(card_llist *column);
 
 int main(void)
 {
+    // initialize game
     struct card_llist columns[COLUMNS];
     struct card_llist foundations[FOUNDATIONS];
 
@@ -36,11 +37,22 @@ int main(void)
 #endif
     arrange_cards(columns, foundations);
 
-    bool running = true;
-    while (running)
+    // game loop
+    bool playing = true;
+    while (playing)
     {
         display_game(columns, foundations);
-        user_input(columns, foundations);
+
+        char input[128];
+        printf("LAST Command: ");
+        printf("\nMessage: ");
+        printf("\nINPUT > ");
+        scanf("%s", input);
+
+        if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0)
+        {
+            playing = false;
+        }
     }
 
     return 0;
@@ -171,14 +183,5 @@ int display_game(card_llist columns[], card_llist foundations[])
         printf("\n");
         row++;
     }
-    return 0;
-}
-
-int user_input(card_llist columns[], card_llist foundations[]) {
-    char input[128];
-    printf("LAST Command: ");
-    printf("Message: ");
-    printf("INPUT > ");
-    scanf("%s", input);
     return 0;
 }
