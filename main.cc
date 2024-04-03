@@ -13,12 +13,14 @@ struct card_llist
     struct card_llist *next;
 };
 
-void display_game(card_llist columns[], card_llist foundations[]);
-void load_cards_from_file(card_llist columns[], card_llist foundations[]); // LD
+int display_game(card_llist columns[], card_llist foundations[]);
+int arrange_cards(card_llist columns[], card_llist foundations[]);
+int load_cards_from_file(card_llist columns[], card_llist foundations[]);
+card_llist *get_last_card(card_llist *column);
 
 int main(void)
 {
-    struct card_llist columns[COLUMNS]; // malloc(sizeof(card_llist) * COLUMNS);
+    struct card_llist columns[COLUMNS];
     struct card_llist foundations[FOUNDATIONS];
 
 #ifdef FILE_NAME
@@ -29,13 +31,28 @@ int main(void)
                                        "AH", "1H", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "JH", "QH", "KH",
                                        "AS", "1S", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "JS", "QS", "KS"};
 #endif
-
+    arrange_cards(columns, foundations);
     display_game(columns, foundations);
 
     return 0;
 }
 
-void load_cards_from_file(card_llist columns[], card_llist foundations[])
+// card_llist *get_card_index(card_llist columns[], int index)
+// {
+//     return NULL;
+// }
+
+card_llist *get_last_card(card_llist *column)
+{
+    struct card_llist *lastCard = column;
+    while (lastCard->next != NULL)
+    {
+        lastCard = lastCard->next;
+    }
+    return lastCard;
+}
+
+int load_cards_from_file(card_llist columns[], card_llist foundations[])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
     char character;
@@ -70,30 +87,61 @@ void load_cards_from_file(card_llist columns[], card_llist foundations[])
         }
         if (i == 2)
         {
-            // handle error
+            return -1;
         }
         card[i] = character;
         i++;
     }
-    // fclose(cards_file);
+
+    fclose(cards_file);
+
+    return 0;
 }
 
-void display_game(card_llist columns[], card_llist foundations[])
+int arrange_cards(card_llist columns[], card_llist foundations[])
 {
-    printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n");
+    // 1, 6, 7, 8, 9, 10, and 11
+    int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
+
+    for (int i = 0; i < COLUMNS; i++)
+    {
+        struct card_llist *lastColumnCard = (columns + i);
+        for (int j = 0; j < columnSizes[i] - 1; j++)
+        {
+            if (lastColumnCard->next == NULL)
+            {
+                return -1;
+            }
+            lastColumnCard = lastColumnCard->next;
+        }
+        if (lastColumnCard->next == NULL)
+        {
+            return -1;
+        }
+        get_last_card(columns + i + 1)->next = lastColumnCard->next;
+        lastColumnCard->next = NULL;
+    }
+    return 0;
+}
+
+int display_game(card_llist columns[], card_llist foundations[])
+{
+    printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
 
     int row = 0;
     int columnEnd;
     bool breakOuter = false;
     for (int i = 0; columnEnd != COLUMNS; i++)
     {
+        // columns
         columnEnd = 0;
         for (int j = 0; j < COLUMNS; j++)
         {
             struct card_llist *nextCard = (columns + j);
             for (int k = 0; k < row; k++)
             {
-                if (nextCard->next == NULL) {
+                if (nextCard->next == NULL)
+                {
                     columnEnd++;
                     printf("\t");
                     breakOuter = true;
@@ -101,13 +149,23 @@ void display_game(card_llist columns[], card_llist foundations[])
                 }
                 nextCard = nextCard->next;
             }
-            if (breakOuter) {
+            if (breakOuter)
+            {
                 breakOuter = false;
                 continue;
             }
             printf("%c%c\t", nextCard->card[0], nextCard->card[1]);
         }
+
+        // foundations
+        if (row == 0 || row == 2 || row == 4 || row == 6)
+        {
+            int foundationNr = row / 2 + 1;
+            printf("\t%c%c\tF%d", '[', ']', foundationNr);
+        }
+
         printf("\n");
         row++;
     }
+    return 0;
 }
