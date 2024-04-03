@@ -16,6 +16,7 @@ struct card_llist
 int display_game(card_llist columns[], card_llist foundations[]);
 int arrange_cards(card_llist columns[], card_llist foundations[]);
 int load_cards_from_file(card_llist columns[], card_llist foundations[]);
+// int load_cards_from_array(card_llist columns[], card_llist foundations[]);
 card_llist *get_last_card(card_llist *column);
 
 int main(void)
@@ -26,21 +27,17 @@ int main(void)
 #ifdef FILE_NAME
     load_cards_from_file(columns, foundations);
 #else
-    const char *cards[CARDS_NUM][2] = {"AC", "1C", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "JC", "QC", "KC",
-                                       "AD", "1D", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "JD", "QD", "KD",
-                                       "AH", "1H", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "JH", "QH", "KH",
-                                       "AS", "1S", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "JS", "QS", "KS"};
+    // const char *cards[CARDS_NUM][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
+    //                                    "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
+    //                                    "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
+    //                                    "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
+    // load_cards_from_array(columns, foundations, cards);
 #endif
     arrange_cards(columns, foundations);
     display_game(columns, foundations);
 
     return 0;
 }
-
-// card_llist *get_card_index(card_llist columns[], int index)
-// {
-//     return NULL;
-// }
 
 card_llist *get_last_card(card_llist *column)
 {
@@ -114,9 +111,9 @@ int arrange_cards(card_llist columns[], card_llist foundations[])
             }
             lastColumnCard = lastColumnCard->next;
         }
-        if (lastColumnCard->next == NULL)
+        if (COLUMNS - 1 == i)
         {
-            return -1;
+            break;
         }
         get_last_card(columns + i + 1)->next = lastColumnCard->next;
         lastColumnCard->next = NULL;
