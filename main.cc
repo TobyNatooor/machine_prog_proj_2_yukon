@@ -17,6 +17,7 @@ int display_game(card_llist columns[], card_llist foundations[]);
 int arrange_cards(card_llist columns[], card_llist foundations[]);
 int load_cards_from_file(card_llist columns[], card_llist foundations[]);
 // int load_cards_from_array(card_llist columns[], card_llist foundations[]);
+int user_input(card_llist columns[], card_llist foundations[]);
 card_llist *get_last_card(card_llist *column);
 
 int main(void)
@@ -34,7 +35,13 @@ int main(void)
     // load_cards_from_array(columns, foundations, cards);
 #endif
     arrange_cards(columns, foundations);
-    display_game(columns, foundations);
+
+    bool running = true;
+    while (running)
+    {
+        display_game(columns, foundations);
+        user_input(columns, foundations);
+    }
 
     return 0;
 }
@@ -126,7 +133,7 @@ int display_game(card_llist columns[], card_llist foundations[])
     printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
 
     int row = 0;
-    int columnEnd;
+    int columnEnd = 0;
     bool breakOuter = false;
     for (int i = 0; columnEnd != COLUMNS; i++)
     {
@@ -164,5 +171,14 @@ int display_game(card_llist columns[], card_llist foundations[])
         printf("\n");
         row++;
     }
+    return 0;
+}
+
+int user_input(card_llist columns[], card_llist foundations[]) {
+    char input[128];
+    printf("LAST Command: ");
+    printf("Message: ");
+    printf("INPUT > ");
+    scanf("%s", input);
     return 0;
 }
