@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define FILE_NAME "cards.txt"
 #define CARDS_NUM 52
@@ -14,11 +16,11 @@ struct card_llist
     struct card_llist *next;
 };
 
-int display_game(card_llist columns[], card_llist foundations[]);
-int arrange_cards(card_llist columns[], card_llist foundations[]);
-int load_cards_from_file(card_llist columns[], card_llist foundations[]);
+int display_game(struct card_llist columns[], struct card_llist foundations[]);
+int arrange_cards(struct card_llist columns[], struct card_llist foundations[]);
+int load_cards_from_file(struct card_llist columns[], struct card_llist foundations[]);
 // int load_cards_from_array(card_llist columns[], card_llist foundations[]);
-card_llist *get_last_card(card_llist *column);
+struct card_llist *get_last_card(struct card_llist *column);
 
 int main(void)
 {
@@ -51,6 +53,7 @@ int main(void)
 
         if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0)
         {
+            // remove cards
             playing = false;
         }
     }
@@ -58,7 +61,7 @@ int main(void)
     return 0;
 }
 
-card_llist *get_last_card(card_llist *column)
+struct card_llist *get_last_card(struct card_llist *column)
 {
     struct card_llist *lastCard = column;
     while (lastCard->next != NULL)
@@ -68,7 +71,7 @@ card_llist *get_last_card(card_llist *column)
     return lastCard;
 }
 
-int load_cards_from_file(card_llist columns[], card_llist foundations[])
+int load_cards_from_file(struct card_llist columns[], struct card_llist foundations[])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
     char character;
@@ -87,7 +90,7 @@ int load_cards_from_file(card_llist columns[], card_llist foundations[])
             {
                 if (nextCard->next == NULL)
                 {
-                    nextCard->next = new card_llist;
+                    nextCard->next = (struct card_llist *)malloc(sizeof(struct card_llist));
                 }
                 nextCard = nextCard->next;
             }
@@ -114,7 +117,7 @@ int load_cards_from_file(card_llist columns[], card_llist foundations[])
     return 0;
 }
 
-int arrange_cards(card_llist columns[], card_llist foundations[])
+int arrange_cards(struct card_llist columns[], struct card_llist foundations[])
 {
     // 1, 6, 7, 8, 9, 10, and 11
     int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
@@ -140,7 +143,7 @@ int arrange_cards(card_llist columns[], card_llist foundations[])
     return 0;
 }
 
-int display_game(card_llist columns[], card_llist foundations[])
+int display_game(struct card_llist columns[], struct card_llist foundations[])
 {
     printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
 
