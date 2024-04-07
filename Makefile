@@ -9,5 +9,5 @@ all: $(OBJS)
 	$(CC) -c $< -o $@
 
 clean:
-	-rm $(wildcard **/*.o)
-	-rm $(wildcard *.exe)
+	-rm $(OBJS)
+	-rm $(wildcard yukon.exe)

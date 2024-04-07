@@ -3,12 +3,6 @@
 #include <stdlib.h>
 #include "yukon.h"
 
-#define FILE_NAME "../../cards.txt"
-#define CARDS_NUM 52
-#define FOUNDATIONS 4
-#define COLUMNS 7
-#define CARD_SIZE 2
-
 struct card_llist *get_last_card(struct card_llist *column)
 {
     if (column == NULL)
@@ -47,12 +41,18 @@ struct card_llist *get_card_by_index(struct card_llist *column, int index)
     return card;
 }
 
-void move_cards(struct card_llist *from, struct card_llist *to, int index)
+int move_cards(struct card_llist *from, struct card_llist *to, int index)
 {
-    struct card_llist *lastCard = get_last_card(from);
-    struct card_llist *newLastCard = get_card_by_index(from, index - 1);
-    lastCard->next = to;
-    from = newLastCard;
+    struct card_llist *card = get_card_by_index(from, index - 1);
+    if (card == NULL)
+    {
+        printf("No card found at index %d\n", index);
+        return -1;
+    }
+
+    add_card(to, card->next);
+    card->next = NULL;
+    return 0;
 }
 
 int face_value_to_int(char card_value)
@@ -100,7 +100,7 @@ int load_cards_from_file(struct card_llist *columns[])
     char face_value;
     char suit;
 
-    for (int i = 0; (character = fgetc(cards_file)) != EOF; i++)
+    for (int i = 0; (character = fgetc(cards_file)) != EOF; ++i)
     {
         if (character == '\n')
         {
@@ -110,8 +110,16 @@ int load_cards_from_file(struct card_llist *columns[])
             card->suit = suit;
             card->hidden = 1;
             card->next = NULL;
-            add_card(columns[0], card);
-            i = 0;
+            if (columns[0] == NULL)
+            {
+                columns[0] = card;
+            }
+            else
+            {
+                add_card(columns[0], card);
+            }
+            // add_card(columns[0], card);
+            i = -1;
             continue;
         }
 
@@ -133,9 +141,17 @@ int arrange_cards(struct card_llist *columns[], struct card_llist *foundations[]
     // 1, 6, 7, 8, 9, 10, and 11
     int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
 
-    for (int i = 0; i < COLUMNS; i++)
+    for (int i = 0; i < COLUMNS - 1; i++)
     {
-        move_cards(columns[0], columns[i], columnSizes[i]);
+        struct card_llist *card = get_card_by_index(columns[i], columnSizes[i] - 1);
+        if (card == NULL)
+        {
+            printf("No card found at index %d\n", columnSizes[i] - 1);
+            return -1;
+        }
+        columns[i + 1] = card->next;
+        card->next = NULL;
+        // move_cards(columns[i], columns[i + 1], columnSizes[i]);
     }
     return 0;
 }
@@ -152,9 +168,10 @@ int display_game(struct card_llist *columns[], struct card_llist *foundations[])
         columnsDone = 0;
         for (int j = 0; j < COLUMNS; j++)
         {
-            struct card_llist *nextCard = get_card_by_index(columns[j], j);
+            struct card_llist *nextCard = get_card_by_index(columns[j], rows);
             if (nextCard == NULL)
             {
+                columnsDone++;
                 printf("\t");
             }
             else
@@ -174,19 +191,20 @@ int display_game(struct card_llist *columns[], struct card_llist *foundations[])
     return 0;
 }
 
-void print_column(struct card_llist *column)
+int print_columns(struct card_llist *column[])
 {
-    if (column == NULL)
+    for (int i = 0; i < COLUMNS; i++)
     {
-        printf("Empty column\n");
-        return;
+        printf("Column %d: ", i);
+        struct card_llist *card = column[i];
+        while (card != NULL)
+        {
+            printf("%c%c ", int_to_face_value(card->value), card->suit);
+            card = card->next;
+        }
+        printf("\n");
     }
-    while (column != NULL)
-    {
-        printf("%c%c ", int_to_face_value(column->value), column->suit);
-        column = column->next;
-    }
-    printf("\n");
+    return 0;
 }
 
 int start_game()
@@ -217,9 +235,7 @@ int start_game()
         //                                    "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
         // load_cards_from_array(columns, foundations, cards);
 #endif
-    print_column(columns[0]);
     arrange_cards(columns, foundations);
-
     // game loop
     int playing = 1;
     while (playing)
@@ -238,10 +254,4 @@ int start_game()
             playing = 0;
         }
     }
-}
-
-int main(void)
-{
-    start_game();
-    return 0;
 }
