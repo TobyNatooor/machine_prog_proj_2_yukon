@@ -6,7 +6,7 @@
 #define DELIMITER '\n'
 
 #ifdef FILE_NAME
-int load_cards_from_file(struct card_llist *columns[])
+int load_cards_from_file(struct card_llist *columns[COLUMNS])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
     char character, face_value, suit;
@@ -44,9 +44,9 @@ int load_cards_from_file(struct card_llist *columns[])
     return 0;
 }
 #else
-int load_cards_from_array(struct card_llist *columns[], const char cards[CARDS_NUM][2])
+int load_cards_from_array(struct card_llist *columns[COLUMNS], const char cards[CARD_COUNT][CARD_SIZE])
 {
-    for (int i = 0; i < CARDS_NUM; i++)
+    for (int i = 0; i < CARD_COUNT; i++)
     {
         // create card
         struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
@@ -65,7 +65,7 @@ int load_cards_from_array(struct card_llist *columns[], const char cards[CARDS_N
 }
 #endif
 
-int arrange_cards(struct card_llist *columns[], struct card_llist *foundations[])
+int arrange_cards(struct card_llist *columns[COLUMNS])
 {
     int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
 
@@ -81,7 +81,7 @@ int arrange_cards(struct card_llist *columns[], struct card_llist *foundations[]
     return 0;
 }
 
-int display_game(struct card_llist *columns[], struct card_llist *foundations[])
+int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS])
 {
     printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
 
@@ -154,7 +154,7 @@ char int_to_face_value(int card_value)
     }
 }
 
-int print_columns(struct card_llist *column[])
+int print_columns(struct card_llist *column[COLUMNS])
 {
     for (int i = 0; i < COLUMNS; i++)
     {
@@ -184,7 +184,7 @@ int start_game()
 #ifdef FILE_NAME
     result = load_cards_from_file(columns);
 #else
-    const char cards[CARDS_NUM][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
+    const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
                                       "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
                                       "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
                                       "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
@@ -196,7 +196,7 @@ int start_game()
         return -1;
     }
 
-    result = arrange_cards(columns, foundations);
+    result = arrange_cards(columns);
     if (result != 0)
     {
         printf("Error arranging cards\n");
