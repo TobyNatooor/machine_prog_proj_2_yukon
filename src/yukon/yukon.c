@@ -3,44 +3,6 @@
 #include <stdlib.h>
 #include "yukon.h"
 
-struct card_llist *get_last_card(struct card_llist *column)
-{
-    if (column == NULL)
-        return NULL;
-    struct card_llist *lastCard = column;
-    while (lastCard->next != NULL)
-    {
-        lastCard = lastCard->next;
-    }
-    return lastCard;
-}
-
-void add_card(struct card_llist *column, struct card_llist *card)
-{
-    if (column == NULL)
-    {
-        column = card;
-        return;
-    }
-    while (column->next != NULL)
-    {
-        column = column->next;
-    }
-    column->next = card;
-}
-
-struct card_llist *get_card_by_index(struct card_llist *column, int index)
-{
-    struct card_llist *card = column;
-    for (int i = 0; i < index; i++)
-    {
-        if (card == NULL)
-            return NULL;
-        card = card->next;
-    }
-    return card;
-}
-
 int move_cards(struct card_llist *from, struct card_llist *to, int index)
 {
     struct card_llist *card = get_card_by_index(from, index - 1);
@@ -93,6 +55,7 @@ char int_to_face_value(int card_value)
     }
 }
 
+#ifdef FILE_NAME
 int load_cards_from_file(struct card_llist *columns[])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
@@ -135,6 +98,28 @@ int load_cards_from_file(struct card_llist *columns[])
 
     return 0;
 }
+#else
+int load_cards_from_array(struct card_llist *columns[], const char cards[CARDS_NUM][2])
+{
+    for (int i = 0; i < CARDS_NUM; i++)
+    {
+        struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
+        card->value = face_value_to_int(cards[i][0]);
+        card->suit = cards[i][1];
+        card->hidden = 1;
+        card->next = NULL;
+        if (columns[0] == NULL)
+        {
+            columns[0] = card;
+        }
+        else
+        {
+            add_card(columns[0], card);
+        }
+    }
+    return 0;
+}
+#endif
 
 int arrange_cards(struct card_llist *columns[], struct card_llist *foundations[])
 {
@@ -196,12 +181,7 @@ int print_columns(struct card_llist *column[])
     for (int i = 0; i < COLUMNS; i++)
     {
         printf("Column %d: ", i);
-        struct card_llist *card = column[i];
-        while (card != NULL)
-        {
-            printf("%c%c ", int_to_face_value(card->value), card->suit);
-            card = card->next;
-        }
+        print_cards(column[i]);
         printf("\n");
     }
     return 0;
@@ -229,13 +209,14 @@ int start_game()
         return -1;
     }
 #else
-        // const char *cards[CARDS_NUM][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
-        //                                    "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
-        //                                    "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
-        //                                    "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
-        // load_cards_from_array(columns, foundations, cards);
+    const char cards[CARDS_NUM][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
+                                      "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
+                                      "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
+                                      "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
+    load_cards_from_array(columns, cards);
 #endif
     arrange_cards(columns, foundations);
+    print_columns(columns);
     // game loop
     int playing = 1;
     while (playing)
