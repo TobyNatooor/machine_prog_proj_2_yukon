@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.27)
+project(machine_prog_proj_2_yukon C)
+
+set(CMAKE_C_STANDARD 11)
+
+include_directories(.)
+include_directories(src)
+include_directories(src/yukon)
+include_directories(src/yukon/card_llist)
+
+add_executable(machine_prog_proj_2_yukon
+        src/yukon/card_llist/card_llist.c
+        src/yukon/card_llist/card_llist.h
+        src/yukon/yukon.c
+        src/yukon/yukon.h
+        src/main.c)

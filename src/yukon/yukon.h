@@ -1,6 +1,6 @@
 #include "card_llist/card_llist.h"
 
-#define FILE_NAME "cards.txt"
+#define FILE_NAME "../cards.txt"
 #define CARD_COUNT 52
 #define CARD_SIZE 2
 #define FOUNDATIONS 4

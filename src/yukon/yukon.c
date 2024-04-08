@@ -9,6 +9,11 @@
 int load_cards_from_file(struct card_llist *columns[COLUMNS])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
+    if (cards_file == NULL)
+    {
+        printf("Error opening file\n");
+        return -1;
+    }
     char character, face_value, suit;
 
     for (int i = 0; (character = fgetc(cards_file)) != EOF; ++i)
