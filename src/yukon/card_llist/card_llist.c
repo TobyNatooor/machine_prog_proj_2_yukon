@@ -1,50 +1,57 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "card_llist.h"
 
-struct card_llist *get_last_card(struct card_llist *column)
+struct card_llist *get_last_card(struct card_llist *cards)
 {
-    if (column == NULL)
+    if (cards == NULL)
         return NULL;
-    struct card_llist *lastCard = column;
-    while (lastCard->next != NULL)
+    while (cards->next != NULL)
     {
-        lastCard = lastCard->next;
+        cards = cards->next;
     }
-    return lastCard;
+    return cards;
 }
 
-void add_card(struct card_llist *column, struct card_llist *card)
+struct card_llist *get_card_by_index(struct card_llist *cards, int index)
 {
-    if (column == NULL)
-    {
-        column = card;
-        return;
-    }
-    while (column->next != NULL)
-    {
-        column = column->next;
-    }
-    column->next = card;
-}
-
-struct card_llist *get_card_by_index(struct card_llist *column, int index)
-{
-    struct card_llist *card = column;
     for (int i = 0; i < index; i++)
     {
-        if (card == NULL)
+        if (cards == NULL)
             return NULL;
-        card = card->next;
+        cards = cards->next;
     }
-    return card;
+    return cards;
 }
 
-void print_cards(struct card_llist *column)
+// int move_cards(struct card_llist *from, struct card_llist *to, int index)
+// {
+//     struct card_llist *card = get_card_by_index(from, index);
+//     if (card == NULL)
+//     {
+//         printf("No card found at index %d\n", index);
+//         return -1;
+//     }
+//     add_card(to, card);
+//     card->next = NULL;
+//     return 0;
+// }
+
+int add_card(struct card_llist *column, struct card_llist *card)
 {
-    struct card_llist *card = column;
-    while (card != NULL)
-    {
-        printf("%c%c ", int_to_face_value(card->value), card->suit);
-        card = card->next;
+    if (column == NULL)
+        return -1;
+    struct card_llist *lastCard = get_last_card(column);
+    lastCard->next = card;
+    return 0;
+}
+
+int remove_cards(struct card_llist *cards) {
+    struct card_llist *nextCard;
+    while (cards != NULL) {
+        nextCard = cards->next;
+        free(cards);
+        cards = nextCard;
     }
+    return 0;
 }
