@@ -24,31 +24,52 @@ struct card_llist *get_card_by_index(struct card_llist *cards, int index)
     return cards;
 }
 
-// int move_cards(struct card_llist *from, struct card_llist *to, int index)
-// {
-//     struct card_llist *card = get_card_by_index(from, index);
-//     if (card == NULL)
-//     {
-//         printf("No card found at index %d\n", index);
-//         return -1;
-//     }
-//     add_card(to, card);
-//     card->next = NULL;
-//     return 0;
-// }
-
-int add_card(struct card_llist *column, struct card_llist *card)
+int get_cards_size(struct card_llist *cards)
 {
-    if (column == NULL)
+    int size = 0;
+    while (cards != NULL)
+    {
+        size++;
+        cards = cards->next;
+    }
+    return size;
+}
+
+int move_cards(struct card_llist *from, struct card_llist **to, int index)
+{
+    if (from == NULL)
+    {
+        printf("No cards to move\n");
         return -1;
-    struct card_llist *lastCard = get_last_card(column);
+    }
+    struct card_llist *card = get_card_by_index(from, index);
+    if (card == NULL)
+    {
+        printf("No card found at index %d\n", index);
+        return -1;
+    }
+    add_card(to, card->next);
+    card->next = NULL;
+    return 0;
+}
+
+int add_card(struct card_llist **cards, struct card_llist *card)
+{
+    if (*cards == NULL)
+    {
+        *cards = card;
+        return 0;
+    }
+    struct card_llist *lastCard = get_last_card(*cards);
     lastCard->next = card;
     return 0;
 }
 
-int remove_cards(struct card_llist *cards) {
+int remove_cards(struct card_llist *cards)
+{
     struct card_llist *nextCard;
-    while (cards != NULL) {
+    while (cards != NULL)
+    {
         nextCard = cards->next;
         free(cards);
         cards = nextCard;

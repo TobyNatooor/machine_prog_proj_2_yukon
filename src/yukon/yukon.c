@@ -9,6 +9,12 @@
 int load_cards_from_file(struct card_llist *columns[COLUMNS])
 {
     FILE *cards_file = fopen(FILE_NAME, "r");
+    // if 'cards.txt' isn't found, try in the parent directory
+    if (cards_file == NULL) {
+        char path[32] = "../";
+        strcat(path, FILE_NAME);
+        cards_file = fopen(path, "r");
+    }
     if (cards_file == NULL)
     {
         printf("Error opening file\n");
@@ -27,11 +33,7 @@ int load_cards_from_file(struct card_llist *columns[COLUMNS])
             card->hidden = 1;
             card->next = NULL;
 
-            // add card to first column
-            if (columns[0] == NULL)
-                columns[0] = card;
-            else
-                add_card(columns[0], card);
+            add_card(&columns[0], card);
 
             i = -1;
             continue;
@@ -60,11 +62,7 @@ int load_cards_from_array(struct card_llist *columns[COLUMNS], const char cards[
         card->hidden = 1;
         card->next = NULL;
 
-        // add card to first column
-        if (columns[0] == NULL)
-            columns[0] = card;
-        else
-            add_card(columns[0], card);
+        add_card(&columns[0], card);
     }
     return 0;
 }
@@ -76,12 +74,7 @@ int arrange_cards(struct card_llist *columns[COLUMNS])
 
     for (int i = 0; i < COLUMNS - 1; i++)
     {
-        struct card_llist *card = get_card_by_index(columns[i], columnSizes[i] - 1);
-        if (card == NULL)
-            return -1;
-        columns[i + 1] = card->next;
-        card->next = NULL;
-        // move_cards(columns[i], columns[i + 1], columnSizes[i] - 1);
+        move_cards(columns[i], &columns[i + 1], columnSizes[i] - 1);
     }
     return 0;
 }
