@@ -3,7 +3,7 @@
 //
 
 #include "gameLogic.h"
-#include "cardList.h"
+#include "../cardList/cardList.h"
 
 
 bool moveCard(Card *newCard, Card **list){

@@ -3,7 +3,7 @@
 //
 
 #include "cardList.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 Card* createCard(int value, char color){
     Card *newCard;

@@ -4,8 +4,10 @@
 
 #ifndef CARDLIST_H
 #define CARDLIST_H
+
 #include <stdlib.h>
 #include <stdbool.h>
+//#include "utils.h"
 
 typedef struct card Card;
 
