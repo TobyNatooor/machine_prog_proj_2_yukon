@@ -1,3 +1,0 @@
-C:/Users/lemse/Desktop/DTU/2_semester/1_blok/02322_Machine_oriented_programming/project/machine_prog_proj_2_yukon/yukon/cmake-build-debug/CMakeFiles/yukon.dir
-C:/Users/lemse/Desktop/DTU/2_semester/1_blok/02322_Machine_oriented_programming/project/machine_prog_proj_2_yukon/yukon/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/lemse/Desktop/DTU/2_semester/1_blok/02322_Machine_oriented_programming/project/machine_prog_proj_2_yukon/yukon/cmake-build-debug/CMakeFiles/rebuild_cache.dir

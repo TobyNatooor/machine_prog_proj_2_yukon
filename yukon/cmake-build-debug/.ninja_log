@@ -1,7 +1,0 @@
-# ninja log v5
-8	136	7345567650010247	CMakeFiles/yukon.dir/main.c.obj	a3e27f8b8430b5a4
-136	276	7345567651325171	yukon.exe	5bf3b62ecf7bb4cf
-3	82	7345567649468507	CMakeFiles/yukon.dir/src/launcher.c.obj	37c3676e417b1fa7
-2	149	7345571820475480	build.ninja	f205afd3696e48ae
-4	173	7345571822511422	CMakeFiles/yukon.dir/main.c.obj	a3e27f8b8430b5a4
-174	320	7345571823934413	yukon.exe	d73bc4bc9c7eb10d
