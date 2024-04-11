@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+//#include "cardList.h"
 
 
 char heads[4] = {'T','J','Q','K'};

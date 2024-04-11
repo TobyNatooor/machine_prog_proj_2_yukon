@@ -6,6 +6,7 @@
 #define GAMELOGIC_H
 
 #include <stdbool.h>
+//#include "cardList.h"
 
 bool moveCard(Card *newCard, Card **list);
 

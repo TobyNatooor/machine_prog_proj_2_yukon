@@ -3,7 +3,7 @@
 //
 
 #include "utils.h"
-#include "cardList.h"
+#include "../cardList/cardList.h"
 
 int readDeck(char filename[], Card *columns[]){
     FILE *fp = fopen(filename, "r");
