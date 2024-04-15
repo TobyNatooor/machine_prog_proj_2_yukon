@@ -187,7 +187,19 @@ int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck
     return 0;
 }
 
-int show_after_index(struct card_llist *column[COLUMNS], int index) {
+struct card_llist *columns_to_deck(struct card_llist *columns[COLUMNS])
+{
+    struct card_llist *deck = columns[0];
+    for (int i = 0; i < COLUMNS - 1; i++)
+    {
+        struct card_llist *lastCard = get_last_card(columns[i]);
+        lastCard->next = columns[i + 1];
+    }
+    return deck;
+}
+
+int show_after_index(struct card_llist *column, int index)
+{
     struct card_llist *card = get_card_by_index(column, index);
     if (card == NULL)
     {
@@ -212,33 +224,20 @@ int start_game()
     for (int i = 0; i < FOUNDATIONS; i++)
         foundations[i] = NULL;
 
-    // result = shuffle_cards(&columns[0]);
-    // if (result != 0)
-    // {
-    //     printf("Error shuffling cards\n");
-    //     return -1;
-    // }
-
-    // result = arrange_cards(columns);
-    // if (result != 0)
-    // {
-    //     printf("Error arranging cards\n");
-    //     return -1;
-    // }
-
     // game loop
     int result;
     int playing = 1;
     char input[64];
-    char message[64];
-    char lastCommand[2];
+    char message[64] = "";
+    char lastCommand[64] = "";
     while (playing)
     {
         result = display_game(columns, foundations);
         if (result != 0)
             strcpy(message, "Error displaying game");
 
-        printf("LAST Command: %c%c", lastCommand[0], lastCommand[1]);
+        printf("LAST Command: ");
+        printf("%s", lastCommand);
         printf("\nMessage: ");
         printf("%s", message);
         printf("\nINPUT > ");
@@ -258,14 +257,18 @@ int start_game()
             deck = load_cards_from_array(cards);
 #endif
             if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
+            {
                 strcpy(message, "Error loading cards");
+                continue;
+            }
 
             result = deck_to_columns(columns, deck);
             if (result != 0)
+            {
                 strcpy(message, "Error moving cards to columns");
-
-            lastCommand[0] = 'L';
-            lastCommand[1] = 'D';
+                continue;
+            }
+            strcpy(lastCommand, "LD");
         }
         else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
         {
@@ -273,23 +276,43 @@ int start_game()
             {
                 result = show_after_index(columns[i], 0);
                 if (result != 0)
+                {
                     strcpy(message, "Error showing cards");
+                    continue;
+                }
             }
-            lastCommand[0] = 'S';
-            lastCommand[1] = 'W';
+            strcpy(lastCommand, "SW");
         }
         else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
         {
-            lastCommand[0] = 'S';
-            lastCommand[1] = 'I';
+            struct card_llist *deck = columns_to_deck(columns);
+            if (deck == NULL)
+            {
+                strcpy(message, "Error moving cards to deck");
+                continue;
+            }
+
+            result = shuffle_cards(&deck);
+            if (result != 0)
+                strcpy(message, "Error shuffling cards");
+
+            for (int i = 0; i < COLUMNS; i++)
+                columns[i] = NULL;
+            result = deck_to_columns(columns, deck);
+            if (result != 0)
+            {
+                strcpy(message, "Error moving cards to columns");
+                continue;
+            }
+
+            strcpy(lastCommand, "SI");
         }
         else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
         {
         }
         else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
         {
-            lastCommand[0] = 'S';
-            lastCommand[1] = 'D';
+            strcpy(lastCommand, "SD");
         }
         else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
         {
@@ -299,16 +322,15 @@ int start_game()
         }
         else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
         {
-            lastCommand[0] = 'P';
-            lastCommand[1] = ' ';
+            strcpy(lastCommand, "P");
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
         {
-            lastCommand[0] = 'Q';
-            lastCommand[1] = ' ';
+            strcpy(lastCommand, "Q");
         }
         else
         {
+            strcpy(lastCommand, "Unknown command");
         }
     }
 }
