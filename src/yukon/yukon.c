@@ -228,6 +228,7 @@ int start_game()
     int result;
     int playing = 1;
     char input[64];
+    char inputArg[64];
     char message[64] = "";
     char lastCommand[64] = "";
     while (playing)
@@ -241,7 +242,33 @@ int start_game()
         printf("\nMessage: ");
         printf("%s", message);
         printf("\nINPUT > ");
-        scanf("%s", input);
+        fgets(input, 64, stdin);
+        input[strcspn(input, "\n")] = 0; // remove newline
+
+        strcpy(lastCommand, input);
+
+        char *token = strtok(input, " ");
+        if (token == NULL)
+        {
+            strcpy(message, "No command entered");
+            continue;
+        }
+        strcpy(input, token);
+        token = strtok(NULL, " ");
+        if (token != NULL)
+        {
+            if (strtok(NULL, " ") != NULL)
+            {
+                strcpy(message, "Too many arguments");
+                continue;
+            }
+            strcpy(inputArg, token);
+        }
+        else
+        {
+            strcpy(inputArg, "");
+        }
+        // printf("inputArg: %s\n", inputArg);
 
         strcpy(message, "OK");
         if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
@@ -268,7 +295,6 @@ int start_game()
                 strcpy(message, "Error moving cards to columns");
                 continue;
             }
-            strcpy(lastCommand, "LD");
         }
         else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
         {
@@ -285,6 +311,19 @@ int start_game()
         }
         else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
         {
+            int splitIndex;
+            if (strcmp(inputArg, "") == 0)
+            {
+                splitIndex = rand() % (CARD_COUNT - 1);
+            } else {
+                splitIndex = atoi(inputArg);
+                if (splitIndex <= 0 || splitIndex >= CARD_COUNT - 1)
+                {
+                    strcpy(message, "Invalid split index");
+                    continue;
+                }
+            }
+
             struct card_llist *deck = columns_to_deck(columns);
             if (deck == NULL)
             {
@@ -292,7 +331,7 @@ int start_game()
                 continue;
             }
 
-            result = shuffle_cards(&deck);
+            result = shuffle_cards(&deck, splitIndex);
             if (result != 0)
                 strcpy(message, "Error shuffling cards");
 
@@ -304,15 +343,12 @@ int start_game()
                 strcpy(message, "Error moving cards to columns");
                 continue;
             }
-
-            strcpy(lastCommand, "SI");
         }
         else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
         {
         }
         else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
         {
-            strcpy(lastCommand, "SD");
         }
         else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
         {
@@ -322,15 +358,12 @@ int start_game()
         }
         else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
         {
-            strcpy(lastCommand, "P");
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
         {
-            strcpy(lastCommand, "Q");
         }
         else
         {
-            strcpy(lastCommand, "Unknown command");
         }
     }
 }
