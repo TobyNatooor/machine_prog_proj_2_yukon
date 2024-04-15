@@ -193,6 +193,12 @@ int start_game()
         printf("Error loading cards\n");
         return -1;
     }
+    result = shuffle_cards(&columns[0]);
+    if (result != 0)
+    {
+        printf("Error shuffling cards\n");
+        return -1;
+    }
 
     result = arrange_cards(columns);
     if (result != 0)

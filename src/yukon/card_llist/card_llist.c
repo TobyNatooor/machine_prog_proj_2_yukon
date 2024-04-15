@@ -53,6 +53,43 @@ int move_cards(struct card_llist *from, struct card_llist **to, int index)
     return 0;
 }
 
+int shuffle_cards(struct card_llist **cards)
+{
+    if (*cards == NULL)
+    {
+        printf("No cards to shuffle\n");
+        return -1;
+    }
+    int size = get_cards_size(*cards);
+    struct card_llist *newDeck = NULL;
+    for (int i = 0; i < size; i++)
+    {
+        int randomIndex = rand() % (size - 1);
+        struct card_llist *randomCard = get_card_by_index(*cards, randomIndex);
+        struct card_llist *pileOne = randomCard->next;
+        struct card_llist *pileTwo = *cards;
+        *cards = pileOne;
+        randomCard->next = NULL;
+
+        newDeck = pileOne;
+        while (1)
+        {
+            pileOne = pileOne->next;
+            newDeck->next = pileTwo;
+            if (pileOne == NULL)
+                break;
+            newDeck = newDeck->next;
+
+            pileTwo = pileTwo->next;
+            newDeck->next = pileOne;
+            if (pileTwo == NULL)
+                break;
+            newDeck = newDeck->next;
+        }
+    }
+    return 0;
+}
+
 int add_card(struct card_llist **cards, struct card_llist *card)
 {
     if (*cards == NULL)
