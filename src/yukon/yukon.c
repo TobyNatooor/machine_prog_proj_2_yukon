@@ -187,6 +187,21 @@ int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck
     return 0;
 }
 
+int show_after_index(struct card_llist *column[COLUMNS], int index) {
+    struct card_llist *card = get_card_by_index(column, index);
+    if (card == NULL)
+    {
+        printf("No card found at index %d\n", index);
+        return -1;
+    }
+    while (card != NULL)
+    {
+        card->hidden = 0;
+        card = card->next;
+    }
+    return 0;
+}
+
 int start_game()
 {
     // initialize game
@@ -214,21 +229,22 @@ int start_game()
     // game loop
     int result;
     int playing = 1;
+    char input[64];
+    char message[64];
+    char lastCommand[2];
     while (playing)
     {
         result = display_game(columns, foundations);
         if (result != 0)
-        {
-            printf("Error displaying game\n");
-            return -1;
-        }
+            strcpy(message, "Error displaying game");
 
-        char input[32];
-        printf("LAST Command: ");
+        printf("LAST Command: %c%c", lastCommand[0], lastCommand[1]);
         printf("\nMessage: ");
+        printf("%s", message);
         printf("\nINPUT > ");
         scanf("%s", input);
 
+        strcpy(message, "OK");
         if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
         {
             struct card_llist *deck;
@@ -242,28 +258,38 @@ int start_game()
             deck = load_cards_from_array(cards);
 #endif
             if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
-            {
-                printf("Error loading cards\n");
-                return -1;
-            }
+                strcpy(message, "Error loading cards");
+
             result = deck_to_columns(columns, deck);
             if (result != 0)
-            {
-                printf("Error moving cards to columns\n");
-                return -1;
-            }
+                strcpy(message, "Error moving cards to columns");
+
+            lastCommand[0] = 'L';
+            lastCommand[1] = 'D';
         }
         else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
         {
+            for (int i = 0; i < COLUMNS; i++)
+            {
+                result = show_after_index(columns[i], 0);
+                if (result != 0)
+                    strcpy(message, "Error showing cards");
+            }
+            lastCommand[0] = 'S';
+            lastCommand[1] = 'W';
         }
         else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
         {
+            lastCommand[0] = 'S';
+            lastCommand[1] = 'I';
         }
         else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
         {
         }
         else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
         {
+            lastCommand[0] = 'S';
+            lastCommand[1] = 'D';
         }
         else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
         {
@@ -273,8 +299,15 @@ int start_game()
         }
         else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
         {
+            lastCommand[0] = 'P';
+            lastCommand[1] = ' ';
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
+        {
+            lastCommand[0] = 'Q';
+            lastCommand[1] = ' ';
+        }
+        else
         {
         }
     }
