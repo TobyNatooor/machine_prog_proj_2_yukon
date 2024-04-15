@@ -6,11 +6,13 @@
 #define DELIMITER '\n'
 
 #ifdef FILE_NAME
-int load_cards_from_file(struct card_llist *columns[COLUMNS])
+struct card_llist *load_deck_from_file()
 {
+    struct card_llist *deck = NULL;
     FILE *cards_file = fopen(FILE_NAME, "r");
     // if 'cards.txt' isn't found, try in the parent directory
-    if (cards_file == NULL) {
+    if (cards_file == NULL)
+    {
         char path[32] = "../";
         strcat(path, FILE_NAME);
         cards_file = fopen(path, "r");
@@ -18,7 +20,7 @@ int load_cards_from_file(struct card_llist *columns[COLUMNS])
     if (cards_file == NULL)
     {
         printf("Error opening file\n");
-        return -1;
+        return NULL;
     }
     char character, face_value, suit;
 
@@ -33,7 +35,7 @@ int load_cards_from_file(struct card_llist *columns[COLUMNS])
             card->hidden = 1;
             card->next = NULL;
 
-            add_card(&columns[0], card);
+            add_card(&deck, card);
 
             i = -1;
             continue;
@@ -44,15 +46,16 @@ int load_cards_from_file(struct card_llist *columns[COLUMNS])
         else if (i == 1)
             suit = character;
         else if (i == 2)
-            return -1;
+            return NULL;
     }
     fclose(cards_file);
 
-    return 0;
+    return deck;
 }
 #else
-int load_cards_from_array(struct card_llist *columns[COLUMNS], const char cards[CARD_COUNT][CARD_SIZE])
+struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE])
 {
+    struct card_llist *deck = NULL;
     for (int i = 0; i < CARD_COUNT; i++)
     {
         // create card
@@ -62,9 +65,9 @@ int load_cards_from_array(struct card_llist *columns[COLUMNS], const char cards[
         card->hidden = 1;
         card->next = NULL;
 
-        add_card(&columns[0], card);
+        add_card(&deck, card);
     }
-    return 0;
+    return deck;
 }
 #endif
 
@@ -99,7 +102,10 @@ int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundat
             }
             else
             {
-                printf("%c%c\t", int_to_face_value(nextCard->value), nextCard->suit);
+                if (nextCard->hidden)
+                    printf("[]\t");
+                else
+                    printf("%c%c\t", int_to_face_value(nextCard->value), nextCard->suit);
             }
         }
 
@@ -168,6 +174,19 @@ int print_columns(struct card_llist *column[COLUMNS])
     return 0;
 }
 
+int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck)
+{
+    for (int i = 0; deck != NULL; i++)
+    {
+        i = i % COLUMNS;
+        struct card_llist *addCard = deck;
+        deck = deck->next;
+        addCard->next = NULL;
+        add_card(&columns[i], addCard);
+    }
+    return 0;
+}
+
 int start_game()
 {
     // initialize game
@@ -178,36 +197,22 @@ int start_game()
     for (int i = 0; i < FOUNDATIONS; i++)
         foundations[i] = NULL;
 
-    int result;
-#ifdef FILE_NAME
-    result = load_cards_from_file(columns);
-#else
-    const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
-                                      "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
-                                      "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
-                                      "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
-    result = load_cards_from_array(columns, cards);
-#endif
-    if (result != 0)
-    {
-        printf("Error loading cards\n");
-        return -1;
-    }
-    result = shuffle_cards(&columns[0]);
-    if (result != 0)
-    {
-        printf("Error shuffling cards\n");
-        return -1;
-    }
+    // result = shuffle_cards(&columns[0]);
+    // if (result != 0)
+    // {
+    //     printf("Error shuffling cards\n");
+    //     return -1;
+    // }
 
-    result = arrange_cards(columns);
-    if (result != 0)
-    {
-        printf("Error arranging cards\n");
-        return -1;
-    }
+    // result = arrange_cards(columns);
+    // if (result != 0)
+    // {
+    //     printf("Error arranging cards\n");
+    //     return -1;
+    // }
 
     // game loop
+    int result;
     int playing = 1;
     while (playing)
     {
@@ -224,11 +229,53 @@ int start_game()
         printf("\nINPUT > ");
         scanf("%s", input);
 
-        if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0)
+        if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
+        {
+            struct card_llist *deck;
+#ifdef FILE_NAME
+            deck = load_deck_from_file();
+#else
+            const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
+                                               "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
+                                               "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
+                                               "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
+            deck = load_cards_from_array(cards);
+#endif
+            if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
+            {
+                printf("Error loading cards\n");
+                return -1;
+            }
+            result = deck_to_columns(columns, deck);
+            if (result != 0)
+            {
+                printf("Error moving cards to columns\n");
+                return -1;
+            }
+        }
+        else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
+        {
+        }
+        else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
+        {
+        }
+        else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
+        {
+        }
+        else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
+        {
+        }
+        else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
         {
             for (int i = 0; i < COLUMNS; i++)
                 remove_cards(columns[i]);
             playing = 0;
+        }
+        else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
+        {
+        }
+        else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
+        {
         }
     }
 }

@@ -8,9 +8,10 @@
 
 int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS]);
 int arrange_cards(struct card_llist *columns[COLUMNS]);
-int load_cards_from_file(struct card_llist *columns[COLUMNS]);
-int load_cards_from_array(struct card_llist *columns[COLUMNS], const char cards[CARD_COUNT][CARD_SIZE]);
-int print_columns(struct card_llist *column[COLUMNS]);
+struct card_llist *load_deck_from_file();
+struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE]);
+int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck);
+int print_columns(struct card_llist *columns[COLUMNS]);
 int face_value_to_int(char card_value);
 char int_to_face_value(int card_value);
 int start_game();
