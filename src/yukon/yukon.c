@@ -315,7 +315,9 @@ int start_game()
             if (strcmp(inputArg, "") == 0)
             {
                 splitIndex = rand() % (CARD_COUNT - 1);
-            } else {
+            }
+            else
+            {
                 splitIndex = atoi(inputArg);
                 if (splitIndex <= 0 || splitIndex >= CARD_COUNT - 1)
                 {
@@ -349,6 +351,27 @@ int start_game()
         }
         else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
         {
+            char save_file_name[64] = "../";
+            strcat_s(save_file_name, 64, inputArg);
+            strcat_s(save_file_name, 64, ".txt");
+            FILE *save_file = fopen(save_file_name, "w");
+            if (save_file == NULL)
+            {
+                strcpy(message, "Error opening file");
+                continue;
+            }
+            for (int i = 0; i < COLUMNS; i++)
+            {
+                struct card_llist *card = columns[i];
+                while (card != NULL)
+                {
+                    fprintf(save_file, "%c%c", int_to_face_value(card->value), card->suit);
+                    card = card->next;
+                    if (columns[i] != NULL)
+                        fprintf(save_file, "%c", DELIMITER);
+                }
+            }
+            fclose(save_file);
         }
         else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
         {
