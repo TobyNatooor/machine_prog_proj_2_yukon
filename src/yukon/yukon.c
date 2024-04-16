@@ -18,7 +18,7 @@ struct card_llist *load_deck_from_file(char *fileName)
     }
     if (cards_file == NULL)
         return NULL;
-    char character, face_value, suit;
+    char character, faceValue, suit;
 
     for (int i = 0; (character = fgetc(cards_file)) != EOF; ++i)
     {
@@ -26,7 +26,7 @@ struct card_llist *load_deck_from_file(char *fileName)
         {
             // create card
             struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
-            card->value = face_value_to_int(face_value);
+            card->value = face_value_to_int(faceValue);
             card->suit = suit;
             card->hidden = 1;
             card->next = NULL;
@@ -38,7 +38,7 @@ struct card_llist *load_deck_from_file(char *fileName)
         }
 
         if (i == 0)
-            face_value = character;
+            faceValue = character;
         else if (i == 1)
             suit = character;
         else if (i == 2)
