@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "card_llist.h"
 
 struct card_llist *get_last_card(struct card_llist *cards)

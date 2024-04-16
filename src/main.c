@@ -1,4 +1,4 @@
-#include "yukon/yukon.h"
+#include "yukon/view/console_view.h"
 
 int main(void)
 {
