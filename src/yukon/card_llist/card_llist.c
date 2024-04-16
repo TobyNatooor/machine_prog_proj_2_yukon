@@ -163,3 +163,41 @@ int remove_cards(struct card_llist *cards)
     }
     return 0;
 }
+
+int face_value_to_int(char card_value)
+{
+    switch (card_value)
+    {
+    case 'A':
+        return 1;
+    case 'T':
+        return 10;
+    case 'J':
+        return 11;
+    case 'Q':
+        return 12;
+    case 'K':
+        return 13;
+    default:
+        return card_value - '0';
+    }
+}
+
+char int_to_face_value(int card_value)
+{
+    switch (card_value)
+    {
+    case 1:
+        return 'A';
+    case 10:
+        return 'T';
+    case 11:
+        return 'J';
+    case 12:
+        return 'Q';
+    case 13:
+        return 'K';
+    default:
+        return card_value + '0';
+    }
+}

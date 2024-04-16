@@ -51,7 +51,29 @@ int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundat
     return 0;
 }
 
-int start_game()
+int print_cards(struct card_llist *cards)
+{
+    while (cards != NULL)
+    {
+        printf("%c%c ", int_to_face_value(cards->value), cards->suit);
+        cards = cards->next;
+    }
+    printf("\n");
+    return 0;
+}
+
+int print_columns(struct card_llist *column[COLUMNS])
+{
+    for (int i = 0; i < COLUMNS; i++)
+    {
+        printf("Column %d: ", i);
+        print_deck(column[i]);
+        printf("\n");
+    }
+    return 0;
+}
+
+int start_console_game()
 {
     // initialize game
     struct card_llist *columns[COLUMNS];
@@ -410,4 +432,3 @@ int start_game()
         }
     }
 }
-

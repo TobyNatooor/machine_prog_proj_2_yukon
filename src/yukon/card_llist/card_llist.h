@@ -26,3 +26,5 @@ int split_shuffle(struct card_llist **deck, int intersectionIndex);
 int insert_shuffle(struct card_llist **deck);
 int add_card(struct card_llist **cards, struct card_llist *card);
 int remove_cards(struct card_llist *cards);
+int face_value_to_int(char card_value);
+char int_to_face_value(int card_value);

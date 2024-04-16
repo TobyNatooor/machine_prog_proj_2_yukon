@@ -2,6 +2,6 @@
 
 int main(void)
 {
-    start_game();
+    start_console_game();
     return 0;
 }

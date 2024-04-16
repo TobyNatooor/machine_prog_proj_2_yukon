@@ -1,6 +1,6 @@
 #include "yukon.h"
 
-struct card_llist *load_deck_from_file(char *fileName)
+struct card_llist *load_deck_from_file(char fileName[])
 {
     struct card_llist *deck = NULL;
     FILE *cards_file = fopen(fileName, "r");
@@ -71,67 +71,6 @@ int arrange_cards(struct card_llist *columns[COLUMNS])
     for (int i = 0; i < COLUMNS; i++)
         show_after_index(columns[i], columnsIndexShown[i]);
 
-    return 0;
-}
-
-int face_value_to_int(char card_value)
-{
-    switch (card_value)
-    {
-    case 'A':
-        return 1;
-    case 'T':
-        return 10;
-    case 'J':
-        return 11;
-    case 'Q':
-        return 12;
-    case 'K':
-        return 13;
-    default:
-        return card_value - '0';
-    }
-}
-
-char int_to_face_value(int card_value)
-{
-    switch (card_value)
-    {
-    case 1:
-        return 'A';
-    case 10:
-        return 'T';
-    case 11:
-        return 'J';
-    case 12:
-        return 'Q';
-    case 13:
-        return 'K';
-    default:
-        return card_value + '0';
-    }
-}
-
-int print_deck(struct card_llist *deck)
-{
-    struct card_llist *card = deck;
-    while (card != NULL)
-    {
-        printf("%c%c ", int_to_face_value(card->value), card->suit);
-        card = card->next;
-    }
-    printf("\n");
-    return 0;
-}
-
-int print_columns(struct card_llist *column[COLUMNS])
-{
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        printf("Column %d: ", i);
-        print_deck(column[i]);
-        printf("\n");
-    }
     return 0;
 }
 
