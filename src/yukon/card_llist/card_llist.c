@@ -48,17 +48,23 @@ int get_card_index(struct card_llist *cards, int value, enum suits suit)
     return -1;
 }
 
-int move_cards(struct card_llist *from, struct card_llist **to, int index)
+int move_cards(struct card_llist **from, struct card_llist **to, int index)
 {
-    if (from == NULL)
+    if (*from == NULL)
     {
         printf("No cards to move\n");
         return -1;
     }
-    struct card_llist *card = get_card_by_index(from, index);
+    if (index == 0)
+    {
+        add_card(to, *from);
+        *from = NULL;
+        return 0;
+    }
+    struct card_llist *card = get_card_by_index(*from, index - 1);
     if (card == NULL)
     {
-        printf("No card found at index %d\n", index);
+        printf("No card found at index %d\n", index - 1);
         return -1;
     }
     add_card(to, card->next);

@@ -19,7 +19,7 @@ struct card_llist *get_last_card(struct card_llist *cards);
 struct card_llist *get_card_by_index(struct card_llist *cards, int index);
 int get_card_index(struct card_llist *cards, int value, enum suits suit);
 int get_cards_size(struct card_llist *cards);
-int move_cards(struct card_llist *from, struct card_llist **to, int count);
+int move_cards(struct card_llist **from, struct card_llist **to, int index);
 int split_shuffle(struct card_llist **deck, int intersectionIndex);
 int insert_shuffle(struct card_llist **deck);
 int add_card(struct card_llist **cards, struct card_llist *card);

@@ -73,11 +73,11 @@ struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE]
 
 int arrange_cards(struct card_llist *columns[COLUMNS])
 {
-    int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
-    int columnsIndexShown[COLUMNS] = {0, 1, 2, 3, 4, 5, 6};
+    const int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
+    const int columnsIndexShown[COLUMNS] = {0, 1, 2, 3, 4, 5, 6};
 
     for (int i = 0; i < COLUMNS - 1; i++)
-        move_cards(columns[i], &columns[i + 1], columnSizes[i] - 1);
+        move_cards(&columns[i], &columns[i + 1], columnSizes[i]);
     for (int i = 0; i < COLUMNS; i++)
         show_after_index(columns[i], columnsIndexShown[i]);
 
@@ -115,7 +115,16 @@ int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundat
         if (row == 0 || row == 2 || row == 4 || row == 6)
         {
             int foundationNr = row / 2 + 1;
-            printf("\t%c%c\tF%d", '[', ']', foundationNr);
+            if (foundations[foundationNr - 1] == NULL)
+            {
+                printf("\t[]\tF%d", foundationNr);
+            }
+            else
+            {
+                struct card_llist *foundationCard = get_last_card(foundations[foundationNr - 1]);
+                char foundationValue = int_to_face_value(foundationCard->value);
+                printf("\t%c%c\tF%d", foundationValue, foundationCard->suit, foundationNr);
+            }
         }
         printf("\n");
     }
@@ -437,15 +446,25 @@ int start_game()
         }
         else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
         {
-            if (input[0] != 'C') {
+            if (input[0] != 'C')
+            {
                 strcpy(message, "Invalid command");
                 continue;
             }
-            struct card_llist *from = columns[input[1] - '0'];
-            enum suits suit = input[3];
-            int value = face_value_to_int(input[4]);
-            int fromIndex = get_card_index(from, value, suit);
-
+            struct card_llist **from = &columns[input[1] - '0' - 1];
+            int value = face_value_to_int(input[3]);
+            enum suits suit = input[4];
+            int fromIndex = get_card_index(*from, value, suit);
+            if (fromIndex == -1)
+            {
+                strcpy(message, "Card not found");
+                continue;
+            }
+            int toIndex = input[8] - '0' - 1;
+            if (input[7] == 'F')
+                result = move_cards(from, &foundations[toIndex], fromIndex);
+            else
+                result = move_cards(from, &columns[toIndex], fromIndex);
         }
         else
         {
