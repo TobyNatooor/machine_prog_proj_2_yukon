@@ -158,17 +158,24 @@ char int_to_face_value(int card_value)
     }
 }
 
+int print_deck(struct card_llist *deck)
+{
+    struct card_llist *card = deck;
+    while (card != NULL)
+    {
+        printf("%c%c ", int_to_face_value(card->value), card->suit);
+        card = card->next;
+    }
+    printf("\n");
+    return 0;
+}
+
 int print_columns(struct card_llist *column[COLUMNS])
 {
     for (int i = 0; i < COLUMNS; i++)
     {
         printf("Column %d: ", i);
-        struct card_llist *card = column[i];
-        while (card != NULL)
-        {
-            printf("%c%c ", int_to_face_value(card->value), card->suit);
-            card = card->next;
-        }
+        print_deck(column[i]);
         printf("\n");
     }
     return 0;
@@ -176,6 +183,9 @@ int print_columns(struct card_llist *column[COLUMNS])
 
 int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck)
 {
+    for (int i = 0; i < COLUMNS; i++)
+        columns[i] = NULL;
+
     for (int i = 0; deck != NULL; i++)
     {
         i = i % COLUMNS;
@@ -307,7 +317,6 @@ int start_game()
                     continue;
                 }
             }
-            strcpy(lastCommand, "SW");
         }
         else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
         {
@@ -333,12 +342,13 @@ int start_game()
                 continue;
             }
 
-            result = shuffle_cards(&deck, splitIndex);
+            result = split_shuffle(&deck, splitIndex);
             if (result != 0)
+            {
                 strcpy(message, "Error shuffling cards");
+                continue;
+            }
 
-            for (int i = 0; i < COLUMNS; i++)
-                columns[i] = NULL;
             result = deck_to_columns(columns, deck);
             if (result != 0)
             {
@@ -348,6 +358,20 @@ int start_game()
         }
         else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
         {
+            struct card_llist *deck = columns_to_deck(columns);
+            result = insert_shuffle(&deck);
+            if (result != 0)
+            {
+                strcpy(message, "Error shuffling cards");
+                continue;
+            }
+            print_deck(deck);
+            result = deck_to_columns(columns, deck);
+            if (result != 0)
+            {
+                strcpy(message, "Error moving cards to columns");
+                continue;
+            }
         }
         else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
         {
@@ -387,6 +411,7 @@ int start_game()
         }
         else
         {
+            strcpy(message, "Unknown command");
         }
     }
 }

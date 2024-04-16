@@ -53,19 +53,19 @@ int move_cards(struct card_llist *from, struct card_llist **to, int index)
     return 0;
 }
 
-int shuffle_cards(struct card_llist **cards, int intersectionIndex)
+int split_shuffle(struct card_llist **deck, int intersectionIndex)
 {
-    if (*cards == NULL)
+    if (*deck == NULL)
     {
         printf("No cards to shuffle\n");
         return -1;
     }
-    int size = get_cards_size(*cards);
+    int size = get_cards_size(*deck);
     struct card_llist *newDeck = NULL;
-    struct card_llist *randomCard = get_card_by_index(*cards, intersectionIndex);
+    struct card_llist *randomCard = get_card_by_index(*deck, intersectionIndex);
     struct card_llist *pileOne = randomCard->next;
-    struct card_llist *pileTwo = *cards;
-    *cards = pileOne;
+    struct card_llist *pileTwo = *deck;
+    *deck = pileOne;
     randomCard->next = NULL;
 
     newDeck = pileOne;
@@ -83,6 +83,43 @@ int shuffle_cards(struct card_llist **cards, int intersectionIndex)
             break;
         newDeck = newDeck->next;
     }
+    return 0;
+}
+
+int insert_shuffle(struct card_llist **deck)
+{
+    struct card_llist *oldDeck = *deck;
+    struct card_llist *insertCard = *deck;
+    struct card_llist *newDeck = insertCard;
+    oldDeck = oldDeck->next;
+    insertCard->next = NULL;
+
+    while (oldDeck != NULL)
+    {
+        int size = get_cards_size(newDeck);
+        int randomIndex = rand() % (size + 1);
+        insertCard = oldDeck;
+        oldDeck = oldDeck->next;
+        insertCard->next = NULL;
+        if (randomIndex == 0)
+        {
+            insertCard->next = newDeck;
+            newDeck = insertCard;
+        }
+        else if (randomIndex == size)
+        {
+            struct card_llist *lastCard = get_last_card(newDeck);
+            lastCard->next = insertCard;
+        }
+        else
+        {
+            struct card_llist *randomIndexCard = get_card_by_index(newDeck, randomIndex);
+            struct card_llist *tempCard = randomIndexCard->next;
+            randomIndexCard->next = insertCard;
+            insertCard->next = tempCard;
+        }
+    }
+    *deck = newDeck;
     return 0;
 }
 
