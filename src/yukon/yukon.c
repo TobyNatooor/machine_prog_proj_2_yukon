@@ -425,11 +425,28 @@ int start_game()
         }
         else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
         {
+            if (inPlayPhase)
+            {
+                strcpy(message, "Already in PLAY phase");
+                continue;
+            }
             inPlayPhase = 1;
             arrange_cards(columns);
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
         {
+        }
+        else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
+        {
+            if (input[0] != 'C') {
+                strcpy(message, "Invalid command");
+                continue;
+            }
+            struct card_llist *from = columns[input[1] - '0'];
+            enum suits suit = input[3];
+            int value = face_value_to_int(input[4]);
+            int fromIndex = get_card_index(from, value, suit);
+            
         }
         else
         {

@@ -35,6 +35,19 @@ int get_cards_size(struct card_llist *cards)
     return size;
 }
 
+int get_card_index(struct card_llist *cards, int value, enum suits suit)
+{
+    int index = 0;
+    while (cards != NULL)
+    {
+        if (cards->value == value && cards->suit == suit)
+            return index;
+        index++;
+        cards = cards->next;
+    }
+    return -1;
+}
+
 int move_cards(struct card_llist *from, struct card_llist **to, int index)
 {
     if (from == NULL)
