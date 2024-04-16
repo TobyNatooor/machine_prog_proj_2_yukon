@@ -5,23 +5,19 @@
 
 #define DELIMITER '\n'
 
-#ifdef FILE_NAME
-struct card_llist *load_deck_from_file()
+struct card_llist *load_deck_from_file(char *fileName)
 {
     struct card_llist *deck = NULL;
-    FILE *cards_file = fopen(FILE_NAME, "r");
+    FILE *cards_file = fopen(fileName, "r");
     // if 'cards.txt' isn't found, try in the parent directory
     if (cards_file == NULL)
     {
         char path[32] = "../";
-        strcat(path, FILE_NAME);
+        strcat(path, fileName);
         cards_file = fopen(path, "r");
     }
     if (cards_file == NULL)
-    {
-        printf("Error opening file\n");
         return NULL;
-    }
     char character, face_value, suit;
 
     for (int i = 0; (character = fgetc(cards_file)) != EOF; ++i)
@@ -52,7 +48,7 @@ struct card_llist *load_deck_from_file()
 
     return deck;
 }
-#else
+
 struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE])
 {
     struct card_llist *deck = NULL;
@@ -69,7 +65,6 @@ struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE]
     }
     return deck;
 }
-#endif
 
 int arrange_cards(struct card_llist *columns[COLUMNS])
 {
@@ -298,15 +293,18 @@ int start_game()
                 continue;
             }
             struct card_llist *deck;
-#ifdef FILE_NAME
-            deck = load_deck_from_file();
-#else
-            const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
-                                               "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
-                                               "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
-                                               "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
-            deck = load_cards_from_array(cards);
-#endif
+
+            if (strcmp(inputArg, "") != 0)
+                deck = load_deck_from_file(inputArg);
+            else
+            {
+                const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
+                                                   "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
+                                                   "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
+                                                   "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
+                deck = load_cards_from_array(cards);
+            }
+
             if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
             {
                 strcpy(message, "Error loading cards");
@@ -521,6 +519,52 @@ int start_game()
             {
                 struct card_llist *fromCard = get_card_by_index(*from, fromIndex - 1);
                 fromCard->hidden = 0;
+            }
+        }
+        else if (strlen(input) == 6 && input[2] == '-' && input[3] == '>') // move card from foundation to column
+        {
+            if (input[0] != 'F' || input[4] != 'C')
+            {
+                strcpy(message, "Invalid command");
+                continue;
+            }
+            if (input[1] < '1' || input[1] > '4')
+            {
+                strcpy(message, "Invalid foundation number");
+                continue;
+            }
+            if (input[5] < '1' || input[5] > '7')
+            {
+                strcpy(message, "Invalid column number");
+                continue;
+            }
+            struct card_llist **from = &foundations[input[1] - '0' - 1];
+            struct card_llist **to = &columns[input[5] - '0' - 1];
+            struct card_llist *fromCard = get_last_card(*from);
+            if (fromCard == NULL)
+            {
+                strcpy(message, "No card in foundation");
+                continue;
+            }
+            struct card_llist *toCard = get_last_card(*to);
+            if (toCard == NULL)
+            {
+                if (fromCard->value != 13)
+                {
+                    strcpy(message, "Invalid move");
+                    continue;
+                }
+            }
+            else if (toCard->value != fromCard->value + 1 || toCard->suit == fromCard->suit)
+            {
+                strcpy(message, "Invalid move");
+                continue;
+            }
+            result = move_cards(from, to, get_cards_size(*from) - 1);
+            if (result != 0)
+            {
+                strcpy(message, "Error moving cards");
+                continue;
             }
         }
         else
