@@ -451,9 +451,15 @@ int start_game()
                 strcpy(message, "Invalid command");
                 continue;
             }
-            struct card_llist **from = &columns[input[1] - '0' - 1];
+            if (input[1] < '1' || input[1] > '7')
+            {
+                strcpy(message, "Invalid column");
+                continue;
+            }
+
             int value = face_value_to_int(input[3]);
             enum suits suit = input[4];
+            struct card_llist **from = &columns[input[1] - '0' - 1];
             int fromIndex = get_card_index(*from, value, suit);
             if (fromIndex == -1)
             {
@@ -461,14 +467,79 @@ int start_game()
                 continue;
             }
             int toIndex = input[8] - '0' - 1;
-            if (input[7] == 'F')
-                result = move_cards(from, &foundations[toIndex], fromIndex);
+            struct card_llist **to;
+            if (input[7] == 'C')
+            {
+                if (input[8] < '1' || input[8] > '7')
+                {
+                    strcpy(message, "Invalid column number");
+                    continue;
+                }
+                to = &columns[toIndex];
+                struct card_llist *lastToCard = get_last_card(*to);
+                if (lastToCard->value - 1 != value || lastToCard->suit == suit)
+                {
+                    strcpy(message, "Invalid move");
+                    continue;
+                }
+            }
+            else if (input[7] == 'F')
+            {
+                if (input[8] < '1' || input[8] > '4')
+                {
+                    strcpy(message, "Invalid foundation number");
+                    continue;
+                }
+                to = &foundations[toIndex];
+                struct card_llist *lastToCard = get_last_card(*to);
+                if (lastToCard == NULL)
+                {
+                    if (value != 1)
+                    {
+                        strcpy(message, "Invalid move");
+                        continue;
+                    }
+                }
+                else if (lastToCard->value != value + 1 || lastToCard->suit != suit)
+                {
+                    strcpy(message, "Invalid move");
+                    continue;
+                }
+            }
             else
-                result = move_cards(from, &columns[toIndex], fromIndex);
+            {
+                strcpy(message, "Invalid command");
+                continue;
+            }
+            result = move_cards(from, to, fromIndex);
+            if (result != 0)
+            {
+                strcpy(message, "Error moving cards");
+                continue;
+            }
+            if (fromIndex != 0)
+            {
+                struct card_llist *fromCard = get_card_by_index(*from, fromIndex - 1);
+                fromCard->hidden = 0;
+            }
         }
         else
         {
             strcpy(message, "Unknown command");
+        }
+        int allColumnsEmpty = 1;
+        for (int i = 0; i < COLUMNS; i++)
+        {
+            if (columns[i] != NULL)
+            {
+                allColumnsEmpty = 0;
+                break;
+            }
+        }
+        if (allColumnsEmpty)
+        {
+            inPlayPhase = 0;
+            printf("You won!\n");
         }
     }
 }
