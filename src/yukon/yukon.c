@@ -385,7 +385,6 @@ int start_game()
                 strcpy(message, "Error shuffling cards");
                 continue;
             }
-            print_deck(deck);
             result = deck_to_columns(columns, deck);
             if (result != 0)
             {
@@ -446,7 +445,7 @@ int start_game()
             enum suits suit = input[3];
             int value = face_value_to_int(input[4]);
             int fromIndex = get_card_index(from, value, suit);
-            
+
         }
         else
         {
