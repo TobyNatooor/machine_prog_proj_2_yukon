@@ -74,11 +74,13 @@ struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE]
 int arrange_cards(struct card_llist *columns[COLUMNS])
 {
     int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
+    int columnsIndexShown[COLUMNS] = {0, 1, 2, 3, 4, 5, 6};
 
     for (int i = 0; i < COLUMNS - 1; i++)
-    {
         move_cards(columns[i], &columns[i + 1], columnSizes[i] - 1);
-    }
+    for (int i = 0; i < COLUMNS; i++)
+        show_after_index(columns[i], columnsIndexShown[i]);
+
     return 0;
 }
 
@@ -210,15 +212,13 @@ struct card_llist *columns_to_deck(struct card_llist *columns[COLUMNS])
 
 int show_after_index(struct card_llist *column, int index)
 {
-    struct card_llist *card = get_card_by_index(column, index);
-    if (card == NULL)
+    struct card_llist *card = column;
+    for (int i = 0; card != NULL; i++)
     {
-        printf("No card found at index %d\n", index);
-        return -1;
-    }
-    while (card != NULL)
-    {
-        card->hidden = 0;
+        if (i < index)
+            card->hidden = 1;
+        else
+            card->hidden = 0;
         card = card->next;
     }
     return 0;
@@ -237,6 +237,7 @@ int start_game()
     // game loop
     int result;
     int playing = 1;
+    int inPlayPhase = 0;
     char input[64];
     char inputArg[64];
     char message[64] = "";
@@ -278,11 +279,15 @@ int start_game()
         {
             strcpy(inputArg, "");
         }
-        // printf("inputArg: %s\n", inputArg);
 
         strcpy(message, "OK");
         if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
         {
+            if (inPlayPhase)
+            {
+                strcpy(message, "Command not available in the PLAY phase");
+                continue;
+            }
             struct card_llist *deck;
 #ifdef FILE_NAME
             deck = load_deck_from_file();
@@ -308,6 +313,11 @@ int start_game()
         }
         else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
         {
+            if (inPlayPhase)
+            {
+                strcpy(message, "Command not available in the PLAY phase");
+                continue;
+            }
             for (int i = 0; i < COLUMNS; i++)
             {
                 result = show_after_index(columns[i], 0);
@@ -320,6 +330,11 @@ int start_game()
         }
         else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
         {
+            if (inPlayPhase)
+            {
+                strcpy(message, "Command not available in the PLAY phase");
+                continue;
+            }
             int splitIndex;
             if (strcmp(inputArg, "") == 0)
             {
@@ -358,6 +373,11 @@ int start_game()
         }
         else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
         {
+            if (inPlayPhase)
+            {
+                strcpy(message, "Command not available in the PLAY phase");
+                continue;
+            }
             struct card_llist *deck = columns_to_deck(columns);
             result = insert_shuffle(&deck);
             if (result != 0)
@@ -405,6 +425,8 @@ int start_game()
         }
         else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
         {
+            inPlayPhase = 1;
+            arrange_cards(columns);
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
         {
