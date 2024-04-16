@@ -3,8 +3,30 @@
 //
 
 #include "gameLogic.h"
-#include "../cardList/cardList.h"
 
+bool moveToFound(Card *card, Card **foundation){
+    printf("\nFunction moveToFound() init");
+    Card *current = *foundation;
+    printf("\nStart condition");
+    if(card->next != NULL){
+        printf("\nnext != NULL condition");
+        return false;
+    }
+    printf("\nlet's go");
+    if(current == NULL){
+        printf("\nCurrent == NULL");
+        moveCard(card, foundation);
+        return true;
+    }
+    printf("\n1");
+    Card *foundTop = findLastCard(foundation);
+    printf("\n2");
+    if(foundTop != NULL && !(foundTop->value < card->value && foundTop->color == card->color)){
+        return false;
+    } else {
+        return move(card,foundTop);
+    }
+}
 
 bool moveCard(Card *newCard, Card **list){
     if(newCard == NULL){

@@ -29,4 +29,12 @@ int main(void){
     //printColumns(columns);
     moveCard(findCardByProp(&columns[srcColumn-1],'8','D'), &columns[dstColumn-1]);
     printColumns(columns, foundations);
+    printf("\n Start of if");
+    if(moveToFound(findCardByProp(&columns[6],'A','D'),&foundations[0])){
+        printf("\n Moved");
+    } else {
+        printf("\n Not Moved");
+    }
+    printf("\n End of if");
+    printColumns(columns, foundations);
 }

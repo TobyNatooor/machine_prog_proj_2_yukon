@@ -6,8 +6,9 @@
 #define GAMELOGIC_H
 
 #include <stdbool.h>
-//#include "cardList.h"
+#include "../model/cardList.h"
 
 bool moveCard(Card *newCard, Card **list);
+bool moveToFound(Card *card, Card **foundation);
 
 #endif //GAMELOGIC_H

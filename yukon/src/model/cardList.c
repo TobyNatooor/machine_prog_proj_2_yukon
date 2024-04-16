@@ -71,3 +71,19 @@ Card* findLastCard(Card **list){
     }
     return current;
 }
+
+bool move(Card *srcCard, Card *dstCard){
+    if(dstCard->next != NULL){
+        return false;
+    }
+    Card *previous;
+    dstCard->next = srcCard;
+    if(srcCard->previous == NULL){
+        srcCard->previous = dstCard;
+    } else{
+        previous = srcCard->previous;
+        srcCard->previous = dstCard;
+        previous->next = NULL;
+    }
+    return true;
+}

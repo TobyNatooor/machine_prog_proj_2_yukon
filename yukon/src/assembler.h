@@ -5,8 +5,8 @@
 #ifndef YUKON_ASSEMBLER_H
 #define YUKON_ASSEMBLER_H
 
-#include "cardList/cardList.c"
+#include "model/cardList.c"
 #include "utils/utils.c"
-#include "gameLogic/gameLogic.c"
+#include "controller/gameLogic.c"
 
 #endif //YUKON_ASSEMBLER_H
