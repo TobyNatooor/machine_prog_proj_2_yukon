@@ -1,0 +1,19 @@
+@startuml assignment_1
+
+skinparam linetype ortho
+hide empty methods
+hide empty fields
+hide circle
+
+title Game loop diagram 
+
+start
+:Initialize game;
+while (game is running) is (true)
+    :Get input;
+    :Update game state;
+    :Render game;
+endwhile (false)
+end
+
+@enduml
