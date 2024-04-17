@@ -14,6 +14,8 @@ add_executable(machine_prog_proj_2_yukon
         src/yukon/card_llist/card_llist.h
         src/yukon/view/console_view.c
         src/yukon/view/console_view.h
+        src/yukon/yukon_commands.c
+        src/yukon/yukon_commands.h
         src/yukon/yukon.c
         src/yukon/yukon.h
         src/main.c)

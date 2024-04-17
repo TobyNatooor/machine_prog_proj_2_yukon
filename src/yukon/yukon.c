@@ -1,6 +1,6 @@
 #include "yukon.h"
 
-struct card_llist *load_deck_from_file(char fileName[])
+struct card_llist *load_cards_from_file(char fileName[])
 {
     struct card_llist *deck = NULL;
     FILE *cards_file = fopen(fileName, "r");
@@ -115,3 +115,34 @@ int show_after_index(struct card_llist *column, int index)
     return 0;
 }
 
+int get_input(char input[], char inputArg[])
+{
+    char *token = strtok(input, " ");
+    if (token == NULL)
+        return -1;
+    strcpy(input, token);
+    token = strtok(NULL, " ");
+    if (token != NULL)
+    {
+        if (strtok(NULL, " ") != NULL)
+            return -1;
+        strcpy(inputArg, token);
+    }
+    else
+    {
+        strcpy(inputArg, "");
+    }
+}
+
+int won_game(struct card_llist *columns[COLUMNS])
+{
+    int allColumnsEmpty = 1;
+    for (int i = 0; i < COLUMNS; i++)
+    {
+        if (columns[i] != NULL)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}

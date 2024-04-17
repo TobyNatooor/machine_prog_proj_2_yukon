@@ -67,7 +67,7 @@ int print_columns(struct card_llist *column[COLUMNS])
     for (int i = 0; i < COLUMNS; i++)
     {
         printf("Column %d: ", i);
-        print_deck(column[i]);
+        print_cards(column[i]);
         printf("\n");
     }
     return 0;
@@ -83,17 +83,16 @@ int start_console_game()
     for (int i = 0; i < FOUNDATIONS; i++)
         foundations[i] = NULL;
 
-    // game loop
-    int result;
     int playing = 1;
     int inPlayPhase = 0;
     char input[64];
-    char inputArg[64];
     char message[64] = "";
     char lastCommand[64] = "";
+
+    // game loop
     while (playing)
     {
-        result = display_game(columns, foundations);
+        int result = display_game(columns, foundations);
         if (result != 0)
             strcpy(message, "Error displaying game");
 
@@ -107,328 +106,13 @@ int start_console_game()
 
         strcpy(lastCommand, input);
 
-        char *token = strtok(input, " ");
-        if (token == NULL)
+        char *response = handle_input(columns, foundations, input, &inPlayPhase, &playing);
+        strcpy(message, response);
+        int won = won_game(columns);
+        if (won)
         {
-            strcpy(message, "No command entered");
-            continue;
-        }
-        strcpy(input, token);
-        token = strtok(NULL, " ");
-        if (token != NULL)
-        {
-            if (strtok(NULL, " ") != NULL)
-            {
-                strcpy(message, "Too many arguments");
-                continue;
-            }
-            strcpy(inputArg, token);
-        }
-        else
-        {
-            strcpy(inputArg, "");
-        }
-
-        strcpy(message, "OK");
-        if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
-        {
-            if (inPlayPhase)
-            {
-                strcpy(message, "Command not available in the PLAY phase");
-                continue;
-            }
-            struct card_llist *deck;
-
-            if (strcmp(inputArg, "") != 0)
-                deck = load_deck_from_file(inputArg);
-            else
-            {
-                const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
-                                                   "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
-                                                   "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
-                                                   "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
-                deck = load_cards_from_array(cards);
-            }
-
-            if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
-            {
-                strcpy(message, "Error loading cards");
-                continue;
-            }
-
-            result = deck_to_columns(columns, deck);
-            if (result != 0)
-            {
-                strcpy(message, "Error moving cards to columns");
-                continue;
-            }
-        }
-        else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
-        {
-            if (inPlayPhase)
-            {
-                strcpy(message, "Command not available in the PLAY phase");
-                continue;
-            }
-            for (int i = 0; i < COLUMNS; i++)
-            {
-                result = show_after_index(columns[i], 0);
-                if (result != 0)
-                {
-                    strcpy(message, "Error showing cards");
-                    continue;
-                }
-            }
-        }
-        else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
-        {
-            if (inPlayPhase)
-            {
-                strcpy(message, "Command not available in the PLAY phase");
-                continue;
-            }
-            int splitIndex;
-            if (strcmp(inputArg, "") == 0)
-            {
-                splitIndex = rand() % (CARD_COUNT - 1);
-            }
-            else
-            {
-                splitIndex = atoi(inputArg);
-                if (splitIndex <= 0 || splitIndex >= CARD_COUNT - 1)
-                {
-                    strcpy(message, "Invalid split index");
-                    continue;
-                }
-            }
-
-            struct card_llist *deck = columns_to_deck(columns);
-            if (deck == NULL)
-            {
-                strcpy(message, "Error moving cards to deck");
-                continue;
-            }
-
-            result = split_shuffle(&deck, splitIndex);
-            if (result != 0)
-            {
-                strcpy(message, "Error shuffling cards");
-                continue;
-            }
-
-            result = deck_to_columns(columns, deck);
-            if (result != 0)
-            {
-                strcpy(message, "Error moving cards to columns");
-                continue;
-            }
-        }
-        else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
-        {
-            if (inPlayPhase)
-            {
-                strcpy(message, "Command not available in the PLAY phase");
-                continue;
-            }
-            struct card_llist *deck = columns_to_deck(columns);
-            result = insert_shuffle(&deck);
-            if (result != 0)
-            {
-                strcpy(message, "Error shuffling cards");
-                continue;
-            }
-            result = deck_to_columns(columns, deck);
-            if (result != 0)
-            {
-                strcpy(message, "Error moving cards to columns");
-                continue;
-            }
-        }
-        else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
-        {
-            char save_file_name[64] = "../";
-            strcat_s(save_file_name, 64, inputArg);
-            strcat_s(save_file_name, 64, ".txt");
-            FILE *save_file = fopen(save_file_name, "w");
-            if (save_file == NULL)
-            {
-                strcpy(message, "Error opening file");
-                continue;
-            }
-            for (int i = 0; i < COLUMNS; i++)
-            {
-                struct card_llist *card = columns[i];
-                while (card != NULL)
-                {
-                    fprintf(save_file, "%c%c", int_to_face_value(card->value), card->suit);
-                    card = card->next;
-                    if (columns[i] != NULL)
-                        fprintf(save_file, "%c", DELIMITER);
-                }
-            }
-            fclose(save_file);
-        }
-        else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
-        {
-            for (int i = 0; i < COLUMNS; i++)
-                remove_cards(columns[i]);
-            playing = 0;
-        }
-        else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
-        {
-            if (inPlayPhase)
-            {
-                strcpy(message, "Already in PLAY phase");
-                continue;
-            }
-            inPlayPhase = 1;
-            arrange_cards(columns);
-        }
-        else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
-        {
-        }
-        else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
-        {
-            if (input[0] != 'C')
-            {
-                strcpy(message, "Invalid command");
-                continue;
-            }
-            if (input[1] < '1' || input[1] > '7')
-            {
-                strcpy(message, "Invalid column");
-                continue;
-            }
-
-            int value = face_value_to_int(input[3]);
-            enum suits suit = input[4];
-            struct card_llist **from = &columns[input[1] - '0' - 1];
-            int fromIndex = get_card_index(*from, value, suit);
-            if (fromIndex == -1)
-            {
-                strcpy(message, "Card not found");
-                continue;
-            }
-            int toIndex = input[8] - '0' - 1;
-            struct card_llist **to;
-            if (input[7] == 'C')
-            {
-                if (input[8] < '1' || input[8] > '7')
-                {
-                    strcpy(message, "Invalid column number");
-                    continue;
-                }
-                to = &columns[toIndex];
-                struct card_llist *lastToCard = get_last_card(*to);
-                if (lastToCard->value - 1 != value || lastToCard->suit == suit)
-                {
-                    strcpy(message, "Invalid move");
-                    continue;
-                }
-            }
-            else if (input[7] == 'F')
-            {
-                if (input[8] < '1' || input[8] > '4')
-                {
-                    strcpy(message, "Invalid foundation number");
-                    continue;
-                }
-                to = &foundations[toIndex];
-                struct card_llist *lastToCard = get_last_card(*to);
-                if (lastToCard == NULL)
-                {
-                    if (value != 1)
-                    {
-                        strcpy(message, "Invalid move");
-                        continue;
-                    }
-                }
-                else if (lastToCard->value != value + 1 || lastToCard->suit != suit)
-                {
-                    strcpy(message, "Invalid move");
-                    continue;
-                }
-            }
-            else
-            {
-                strcpy(message, "Invalid command");
-                continue;
-            }
-            result = move_cards(from, to, fromIndex);
-            if (result != 0)
-            {
-                strcpy(message, "Error moving cards");
-                continue;
-            }
-            if (fromIndex != 0)
-            {
-                struct card_llist *fromCard = get_card_by_index(*from, fromIndex - 1);
-                fromCard->hidden = 0;
-            }
-        }
-        else if (strlen(input) == 6 && input[2] == '-' && input[3] == '>') // move card from foundation to column
-        {
-            if (input[0] != 'F' || input[4] != 'C')
-            {
-                strcpy(message, "Invalid command");
-                continue;
-            }
-            if (input[1] < '1' || input[1] > '4')
-            {
-                strcpy(message, "Invalid foundation number");
-                continue;
-            }
-            if (input[5] < '1' || input[5] > '7')
-            {
-                strcpy(message, "Invalid column number");
-                continue;
-            }
-            struct card_llist **from = &foundations[input[1] - '0' - 1];
-            struct card_llist **to = &columns[input[5] - '0' - 1];
-            struct card_llist *fromCard = get_last_card(*from);
-            if (fromCard == NULL)
-            {
-                strcpy(message, "No card in foundation");
-                continue;
-            }
-            struct card_llist *toCard = get_last_card(*to);
-            if (toCard == NULL)
-            {
-                if (fromCard->value != 13)
-                {
-                    strcpy(message, "Invalid move");
-                    continue;
-                }
-            }
-            else if (toCard->value != fromCard->value + 1 || toCard->suit == fromCard->suit)
-            {
-                strcpy(message, "Invalid move");
-                continue;
-            }
-            result = move_cards(from, to, get_cards_size(*from) - 1);
-            if (result != 0)
-            {
-                strcpy(message, "Error moving cards");
-                continue;
-            }
-        }
-        else
-        {
-            strcpy(message, "Unknown command");
-        }
-        int allColumnsEmpty = 1;
-        for (int i = 0; i < COLUMNS; i++)
-        {
-            if (columns[i] != NULL)
-            {
-                allColumnsEmpty = 0;
-                break;
-            }
-        }
-        if (allColumnsEmpty)
-        {
-            inPlayPhase = 0;
             printf("You won!\n");
+            playing = 0;
         }
     }
 }
