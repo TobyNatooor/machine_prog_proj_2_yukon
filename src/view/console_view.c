@@ -87,7 +87,7 @@ int start_console_game()
     int inPlayPhase = 0;
     char input[64];
     char message[64] = "";
-    char lastCommand[64] = "";
+    char lastCommand[64] = "";    
 
     // game loop
     while (playing)
@@ -109,7 +109,7 @@ int start_console_game()
         char *response = handle_input(columns, foundations, input, &inPlayPhase, &playing);
         strcpy(message, response);
         int won = won_game(columns);
-        if (won)
+        if (won && inPlayPhase)
         {
             printf("You won!\n");
             playing = 0;

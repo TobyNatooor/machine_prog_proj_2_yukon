@@ -1,3 +1,5 @@
+#include <string.h>
+#include <ctype.h>
 #include "yukon_commands.h"
 
 char *load_cards(struct card_llist *columns[COLUMNS], char input[64])
@@ -199,43 +201,49 @@ char *move_card_from_foundation(struct card_llist *columns[COLUMNS], struct card
 
 char *handle_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
 {
+    char *temp = input;
+    for (int i = 0; input[i]; i++) {
+        input[i] = toupper(input[i]);
+    }
+    input = temp;
+
     int result;
 
-    if (strcmp(input, "ld") == 0 || strcmp(input, "LD") == 0) // Load deck
+    if (strcmp(input, "LD") == 0) // Load deck
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return load_cards(columns, input);
     }
-    else if (strcmp(input, "sw") == 0 || strcmp(input, "SW") == 0) // Show
+    else if (strcmp(input, "SW") == 0) // Show
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return show_deck(columns);
     }
-    else if (strcmp(input, "si") == 0 || strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
+    else if (strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return shuffle_si(columns, input);
     }
-    else if (strcmp(input, "sr") == 0 || strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
+    else if (strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return shuffle_sr(columns);
     }
-    else if (strcmp(input, "sd") == 0 || strcmp(input, "SD") == 0) // Save deck
+    else if (strcmp(input, "SD") == 0) // Save deck
     {
         return save_deck(columns, input);
     }
-    else if (strcmp(input, "qq") == 0 || strcmp(input, "QQ") == 0) // Quit program
+    else if (strcmp(input, "QQ") == 0) // Quit program
     {
         for (int i = 0; i < COLUMNS; i++)
             remove_cards(columns[i]);
         *playing = 0;
     }
-    else if (strcmp(input, "p") == 0 || strcmp(input, "P") == 0) // Play
+    else if (strcmp(input, "P") == 0) // Play
     {
         if (*inPlayPhase)
             return "Already in PLAY phase";
@@ -243,7 +251,7 @@ char *handle_input(struct card_llist *columns[COLUMNS], struct card_llist *found
         *inPlayPhase = 1;
         arrange_cards(columns);
     }
-    else if (strcmp(input, "q") == 0 || strcmp(input, "Q") == 0) // Quit current game
+    else if (strcmp(input, "Q") == 0) // Quit current game
     {
     }
     else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
