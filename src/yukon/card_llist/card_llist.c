@@ -49,10 +49,8 @@ int get_card_index(struct card_llist *cards, int value, enum suits suit)
 int move_cards(struct card_llist **from, struct card_llist **to, int index)
 {
     if (*from == NULL)
-    {
-        printf("No cards to move\n");
         return -1;
-    }
+    
     if (index == 0)
     {
         add_card(to, *from);
@@ -61,10 +59,8 @@ int move_cards(struct card_llist **from, struct card_llist **to, int index)
     }
     struct card_llist *card = get_card_by_index(*from, index - 1);
     if (card == NULL)
-    {
-        printf("No card found at index %d\n", index - 1);
         return -1;
-    }
+    
     add_card(to, card->next);
     card->next = NULL;
     return 0;
@@ -73,10 +69,8 @@ int move_cards(struct card_llist **from, struct card_llist **to, int index)
 int split_shuffle(struct card_llist **deck, int intersectionIndex)
 {
     if (*deck == NULL)
-    {
-        printf("No cards to shuffle\n");
         return -1;
-    }
+    
     int size = get_cards_size(*deck);
     struct card_llist *newDeck = NULL;
     struct card_llist *randomCard = get_card_by_index(*deck, intersectionIndex);
