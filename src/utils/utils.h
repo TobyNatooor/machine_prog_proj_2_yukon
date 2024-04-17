@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "card_llist/card_llist.h"
+#include "../model/card_llist/card_llist.h"
 
 #define CARD_COUNT 52
 #define CARD_SIZE 2

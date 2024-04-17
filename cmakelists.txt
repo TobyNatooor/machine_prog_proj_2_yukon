@@ -10,12 +10,12 @@ include_directories(src/yukon/card_llist)
 include_directories(src/yukon/view)
 
 add_executable(machine_prog_proj_2_yukon
-        src/yukon/card_llist/card_llist.c
-        src/yukon/card_llist/card_llist.h
-        src/yukon/view/console_view.c
-        src/yukon/view/console_view.h
-        src/yukon/yukon_commands.c
-        src/yukon/yukon_commands.h
-        src/yukon/yukon.c
-        src/yukon/yukon.h
+        src/model/card_llist/card_llist.c
+        src/model/card_llist/card_llist.h
+        src/view/console_view.c
+        src/view/console_view.h
+        src/yukon_commands.c
+        src/yukon_commands.h
+        src/utils/utils.c
+        src/utils/utils.h
         src/main.c)

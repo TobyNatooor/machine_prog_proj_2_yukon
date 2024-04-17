@@ -1,4 +1,4 @@
-#include "yukon.h"
+#include "utils.h"
 
 struct card_llist *load_cards_from_file(char fileName[])
 {

@@ -1,4 +1,4 @@
-#include "yukon.h"
+#include "utils/utils.h"
 
 char *load_cards(struct card_llist *columns[COLUMNS], char input[64]);
 char *shuffle_si(struct card_llist *columns[COLUMNS], char input[64]);
