@@ -51,31 +51,10 @@ int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundat
     return 0;
 }
 
-int print_cards(struct card_llist *cards)
-{
-    while (cards != NULL)
-    {
-        printf("%c%c ", int_to_face_value(cards->value), cards->suit);
-        cards = cards->next;
-    }
-    printf("\n");
-    return 0;
-}
-
-int print_columns(struct card_llist *column[COLUMNS])
-{
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        printf("Column %d: ", i);
-        print_cards(column[i]);
-        printf("\n");
-    }
-    return 0;
-}
-
 int start_console_game()
 {
     // initialize game
+    struct card_llist *deck[CARD_COUNT];
     struct card_llist *columns[COLUMNS];
     struct card_llist *foundations[FOUNDATIONS];
     for (int i = 0; i < COLUMNS; i++)
@@ -106,7 +85,7 @@ int start_console_game()
 
         strcpy(lastCommand, input);
 
-        char *response = handle_input(columns, foundations, input, &inPlayPhase, &playing);
+        char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
         strcpy(message, response);
         int won = won_game(columns);
         if (won && inPlayPhase)

@@ -1,8 +1,7 @@
 #include "utils.h"
 
-struct card_llist *load_cards_from_file(char fileName[])
+int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
 {
-    struct card_llist *deck = NULL;
     FILE *cards_file = fopen(fileName, "r");
     // if 'cards.txt' isn't found, try in the parent directory
     if (cards_file == NULL)
@@ -12,10 +11,11 @@ struct card_llist *load_cards_from_file(char fileName[])
         cards_file = fopen(path, "r");
     }
     if (cards_file == NULL)
-        return NULL;
-    char character, faceValue, suit;
+        return -1;
 
-    for (int i = 0; (character = fgetc(cards_file)) != EOF; ++i)
+    int i = 0;
+    char character, faceValue, suit;
+    for (int j = 0; (character = fgetc(cards_file)) != EOF; ++j)
     {
         if (character == DELIMITER)
         {
@@ -26,27 +26,28 @@ struct card_llist *load_cards_from_file(char fileName[])
             card->hidden = 1;
             card->next = NULL;
 
-            add_card(&deck, card);
-
-            i = -1;
+            deck[i] = card;
+            if (deck[i] == NULL)
+                return -1;
+            i++;
+            j = -1;
             continue;
         }
 
-        if (i == 0)
+        if (j == 0)
             faceValue = character;
-        else if (i == 1)
+        else if (j == 1)
             suit = character;
-        else if (i == 2)
-            return NULL;
+        else if (j == 2)
+            return -1;
     }
     fclose(cards_file);
 
-    return deck;
+    return 0;
 }
 
-struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE])
+int load_cards_from_array(struct card_llist *deck[CARD_COUNT], const char cards[CARD_COUNT][CARD_SIZE])
 {
-    struct card_llist *deck = NULL;
     for (int i = 0; i < CARD_COUNT; i++)
     {
         // create card
@@ -56,9 +57,11 @@ struct card_llist *load_cards_from_array(const char cards[CARD_COUNT][CARD_SIZE]
         card->hidden = 1;
         card->next = NULL;
 
-        add_card(&deck, card);
+        deck[i] = card;
+        if (deck[i] == NULL)
+            return -1;
     }
-    return deck;
+    return 0;
 }
 
 int arrange_cards(struct card_llist *columns[COLUMNS])
@@ -74,31 +77,35 @@ int arrange_cards(struct card_llist *columns[COLUMNS])
     return 0;
 }
 
-int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck)
+int deck_to_columns(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT])
 {
     for (int i = 0; i < COLUMNS; i++)
         columns[i] = NULL;
 
-    for (int i = 0; deck != NULL; i++)
+    for (int i = 0; i < CARD_COUNT; i++)
     {
-        i = i % COLUMNS;
-        struct card_llist *addCard = deck;
-        deck = deck->next;
-        addCard->next = NULL;
-        add_card(&columns[i], addCard);
+        deck[i]->next = NULL;
+        int result = add_card(&columns[i % COLUMNS], deck[i]);
+        if (result != 0)
+            return -1;
     }
     return 0;
 }
 
-struct card_llist *columns_to_deck(struct card_llist *columns[COLUMNS])
+struct card_llist *deck_to_card_llist(struct card_llist *deck[CARD_COUNT])
 {
-    struct card_llist *deck = columns[0];
-    for (int i = 0; i < COLUMNS - 1; i++)
+    struct card_llist *card_llist = NULL;
+    for (int i = 0; i < CARD_COUNT; i++)
     {
-        struct card_llist *lastCard = get_last_card(columns[i]);
-        lastCard->next = columns[i + 1];
+        if (deck[i] == NULL)
+            return NULL;
+        if (deck[i]->next != NULL)
+            deck[i]->next = NULL;
+        int result = add_card(&card_llist, deck[i]);
+        if (result != 0)
+            return NULL;
     }
-    return deck;
+    return card_llist;
 }
 
 int show_after_index(struct card_llist *column, int index)
@@ -115,25 +122,6 @@ int show_after_index(struct card_llist *column, int index)
     return 0;
 }
 
-int get_input(char input[], char inputArg[])
-{
-    char *token = strtok(input, " ");
-    if (token == NULL)
-        return -1;
-    strcpy(input, token);
-    token = strtok(NULL, " ");
-    if (token != NULL)
-    {
-        if (strtok(NULL, " ") != NULL)
-            return -1;
-        strcpy(inputArg, token);
-    }
-    else
-    {
-        strcpy(inputArg, "");
-    }
-}
-
 int won_game(struct card_llist *columns[COLUMNS])
 {
     int allColumnsEmpty = 1;
@@ -145,4 +133,26 @@ int won_game(struct card_llist *columns[COLUMNS])
         }
     }
     return 1;
+}
+
+char *get_command(char input[64])
+{
+    char *command = strtok(input, " ");
+    if (command == NULL)
+        return NULL;
+    return command;
+}
+
+char *get_argument(char input[64])
+{
+    char *command = strtok(input, " ");
+    if (command == NULL)
+        return NULL;
+    char *argument = strtok(NULL, " ");
+    if (argument == NULL || strcmp(argument, "") == 0)
+        return NULL;
+    else
+    {
+        return argument;
+    }
 }

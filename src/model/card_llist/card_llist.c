@@ -142,6 +142,8 @@ int add_card(struct card_llist **cards, struct card_llist *card)
         return 0;
     }
     struct card_llist *lastCard = get_last_card(*cards);
+    if (lastCard == NULL)
+        return -1;
     lastCard->next = card;
     return 0;
 }

@@ -2,57 +2,93 @@
 #include <ctype.h>
 #include "yukon_commands.h"
 
-char *load_cards(struct card_llist *columns[COLUMNS], char input[64])
+char *load_cards(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char input[64])
 {
-    char inputArg[64];
-    int result = get_input(input, inputArg);
-    struct card_llist *deck;
+    char *argument = get_argument(input);
+    if (argument != NULL)
+        return "Error getting input";
 
-    if (strcmp(inputArg, "") != 0)
-        deck = load_cards_from_file(inputArg);
+    int result;
+    if (argument != NULL)
+        result = load_cards_from_file(deck, argument);
     else
     {
         const char cards[CARD_COUNT][2] = {"AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC",
                                            "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD",
                                            "AH", "2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH",
                                            "AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS"};
-        deck = load_cards_from_array(cards);
+        result = load_cards_from_array(deck, cards);
     }
-
-    if (deck == NULL || get_cards_size(deck) != CARD_COUNT)
+    if (result != 0)
         return "Error loading cards";
 
     result = deck_to_columns(columns, deck);
     if (result != 0)
         return "Error moving cards to columns";
+
     return "OK";
 }
 
-char *shuffle_si(struct card_llist *columns[COLUMNS], char input[64])
+char *show_deck(struct card_llist *deck[CARD_COUNT])
 {
-    char inputArg[64];
-    int result = get_input(input, inputArg);
+    for (int i = 0; i < CARD_COUNT; i++)
+    {
+        if (deck[i] == NULL)
+            return "Error showing cards";
+        deck[i]->hidden = 0;
+    }
+    return "OK";
+}
+
+char *shuffle_si(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char input[64])
+{
+    char *argument = get_argument(input);
 
     int splitIndex;
-    if (strcmp(inputArg, "") == 0)
+    if (argument == NULL)
     {
         splitIndex = rand() % (CARD_COUNT - 1);
     }
     else
     {
-        splitIndex = atoi(inputArg);
+        splitIndex = atoi(argument);
         if (splitIndex <= 0 || splitIndex >= CARD_COUNT - 1)
             return "Invalid split index";
     }
 
-    struct card_llist *deck = columns_to_deck(columns);
-    if (deck == NULL)
-        return "Error moving cards to deck";
+    struct card_llist *deck_llist = deck_to_card_llist(deck);
+    if (deck_llist == NULL)
+        return "Error converting deck to card llist";
 
-    result = split_shuffle(&deck, splitIndex);
+    int result = split_shuffle(&deck_llist, splitIndex);
     if (result != 0)
         return "Error shuffling cards";
 
+    for (int i = 0; deck_llist != NULL; i++)
+    {
+        deck[i] = deck_llist;
+        deck_llist = deck_llist->next;
+    }
+    result = deck_to_columns(columns, deck);
+    if (result != 0)
+        return "Error moving cards to columns";
+
+    return "OK";
+}
+
+char *shuffle_sr(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT])
+{
+    struct card_llist *deck_llist = deck_to_card_llist(deck);
+
+    int result = insert_shuffle(&deck_llist);
+    if (result != 0)
+        return "Error shuffling cards";
+
+    for (int i = 0; deck_llist != NULL; i++)
+    {
+        deck[i] = deck_llist;
+        deck_llist = deck_llist->next;
+    }
     result = deck_to_columns(columns, deck);
     if (result != 0)
         return "Error moving cards to columns";
@@ -61,11 +97,10 @@ char *shuffle_si(struct card_llist *columns[COLUMNS], char input[64])
 
 char *save_deck(struct card_llist *columns[COLUMNS], char input[64])
 {
-    char inputArg[64];
-    int result = get_input(input, inputArg);
+    char *argument = get_argument(input);
 
     char save_file_name[64] = "../";
-    strcat_s(save_file_name, 64, inputArg);
+    strcat_s(save_file_name, 64, argument);
     strcat_s(save_file_name, 64, ".txt");
     FILE *save_file = fopen(save_file_name, "w");
     if (save_file == NULL)
@@ -86,27 +121,33 @@ char *save_deck(struct card_llist *columns[COLUMNS], char input[64])
     return "OK";
 }
 
-char *show_deck(struct card_llist *columns[COLUMNS])
+void quit_application(struct card_llist *columns[COLUMNS], int *playing)
 {
     for (int i = 0; i < COLUMNS; i++)
-    {
-        int result = show_after_index(columns[i], 0);
-        if (result != 0)
-            return "Error showing cards";
-    }
+        remove_cards(columns[i]);
+    *playing = 0;
+}
+
+char *init_play_phase(struct card_llist *columns[COLUMNS], int *inPlayPhase)
+{
+    if (*inPlayPhase)
+        return "Already in PLAY phase";
+
+    *inPlayPhase = 1;
+    arrange_cards(columns);
     return "OK";
 }
 
-char *shuffle_sr(struct card_llist *columns[COLUMNS])
+char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
 {
-    struct card_llist *deck = columns_to_deck(columns);
-    int result = insert_shuffle(&deck);
-    if (result != 0)
-        return "Error shuffling cards";
-
-    result = deck_to_columns(columns, deck);
+    if (!*inPlayPhase)
+        return "Can't quit game if not in PLAY phase";
+    int result = deck_to_columns(columns, deck);
     if (result != 0)
         return "Error moving cards to columns";
+    for (int i = 0; i < CARD_COUNT; i++)
+        deck[i]->hidden = 1;
+    *inPlayPhase = 0;
     return "OK";
 }
 
@@ -199,71 +240,54 @@ char *move_card_from_foundation(struct card_llist *columns[COLUMNS], struct card
     return "OK";
 }
 
-char *handle_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
+char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
 {
+    // convert input to uppercase
     char *temp = input;
-    for (int i = 0; input[i]; i++) {
+    for (int i = 0; input[i]; i++)
         input[i] = toupper(input[i]);
-    }
     input = temp;
 
+    char *command = get_command(input);
+    char *argument = get_argument(input);
     int result;
 
-    if (strcmp(input, "LD") == 0) // Load deck
+    if (strcmp(command, "LD") == 0) // Load deck
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
-        return load_cards(columns, input);
+        return load_cards(columns, deck, argument);
     }
-    else if (strcmp(input, "SW") == 0) // Show
+    else if (strcmp(command, "SW") == 0) // Show
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
-        return show_deck(columns);
+        return show_deck(deck);
     }
-    else if (strcmp(input, "SI") == 0) // Shuffle, split and interleaves cards
+    else if (strcmp(command, "SI") == 0) // Shuffle, split and interleaves cards
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
-        return shuffle_si(columns, input);
+        return shuffle_si(columns, deck, argument);
     }
-    else if (strcmp(input, "SR") == 0) // Shuffle, insert randomly into new deck
+    else if (strcmp(command, "SR") == 0) // Shuffle, insert randomly into new deck
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
-        return shuffle_sr(columns);
+        return shuffle_sr(columns, deck);
     }
-    else if (strcmp(input, "SD") == 0) // Save deck
-    {
-        return save_deck(columns, input);
-    }
-    else if (strcmp(input, "QQ") == 0) // Quit program
-    {
-        for (int i = 0; i < COLUMNS; i++)
-            remove_cards(columns[i]);
-        *playing = 0;
-    }
-    else if (strcmp(input, "P") == 0) // Play
-    {
-        if (*inPlayPhase)
-            return "Already in PLAY phase";
-
-        *inPlayPhase = 1;
-        arrange_cards(columns);
-    }
-    else if (strcmp(input, "Q") == 0) // Quit current game
-    {
-    }
+    else if (strcmp(command, "SD") == 0) // Save deck
+        return save_deck(columns, argument);
+    else if (strcmp(command, "QQ") == 0) // Quit program
+        quit_application(columns, playing);
+    else if (strcmp(command, "P") == 0) // Play
+        return init_play_phase(columns, inPlayPhase);
+    else if (strcmp(command, "Q") == 0) // Quit current game
+        return quit_game(columns, deck, inPlayPhase);
     else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
-    {
         return move_cards_from_input(columns, foundations, input);
-    }
     else if (strlen(input) == 6 && input[2] == '-' && input[3] == '>') // move card from foundation to column
-    {
         return move_card_from_foundation(columns, foundations, input);
-    }
     else
         return "Unknown command";
-
-    return "OK";
 }
