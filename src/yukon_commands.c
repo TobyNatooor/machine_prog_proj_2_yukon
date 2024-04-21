@@ -95,28 +95,17 @@ char *shuffle_sr(struct card_llist *columns[COLUMNS], struct card_llist *deck[CA
     return "OK";
 }
 
-char *save_deck(struct card_llist *columns[COLUMNS], char input[64])
+char *save_deck(struct card_llist *deck[CARD_COUNT], char *argument)
 {
-    char *argument = get_argument(input);
+    if (argument == NULL)
+        return "No file name provided";
 
-    char save_file_name[64] = "../";
-    strcat_s(save_file_name, 64, argument);
-    strcat_s(save_file_name, 64, ".txt");
-    FILE *save_file = fopen(save_file_name, "w");
+    FILE *save_file = fopen(argument, "w");
     if (save_file == NULL)
         return "Error opening file";
 
-    for (int i = 0; i < COLUMNS; i++)
-    {
-        struct card_llist *card = columns[i];
-        while (card != NULL)
-        {
-            fprintf(save_file, "%c%c", int_to_face_value(card->value), card->suit);
-            card = card->next;
-            if (columns[i] != NULL)
-                fprintf(save_file, "%c", DELIMITER);
-        }
-    }
+    for (int i = 0; i < CARD_COUNT; i++)
+        fprintf(save_file, "%c%c\n", int_to_face_value(deck[i]->value), deck[i]->suit);
     fclose(save_file);
     return "OK";
 }
@@ -242,14 +231,14 @@ char *move_card_from_foundation(struct card_llist *columns[COLUMNS], struct card
 
 char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
 {
-    // convert input to uppercase
-    char *temp = input;
-    for (int i = 0; input[i]; i++)
-        input[i] = toupper(input[i]);
-    input = temp;
-
     char *command = get_command(input);
-    char *argument = get_argument(input);
+     // convert command to uppercase
+    char *temp = command;
+    for (int i = 0; command[i]; i++)
+        command[i] = toupper(command[i]);
+    command = temp;
+
+   char *argument = get_argument(input);
     int result;
 
     if (strcmp(command, "LD") == 0) // Load deck
@@ -277,7 +266,7 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
         return shuffle_sr(columns, deck);
     }
     else if (strcmp(command, "SD") == 0) // Save deck
-        return save_deck(columns, argument);
+        return save_deck(deck, argument);
     else if (strcmp(command, "QQ") == 0) // Quit program
         quit_application(columns, playing);
     else if (strcmp(command, "P") == 0) // Play
