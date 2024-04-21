@@ -57,6 +57,8 @@ int start_console_game()
     struct card_llist *deck[CARD_COUNT];
     struct card_llist *columns[COLUMNS];
     struct card_llist *foundations[FOUNDATIONS];
+    for (int i = 0; i < CARD_COUNT; i++)
+        deck[i] = NULL;
     for (int i = 0; i < COLUMNS; i++)
         columns[i] = NULL;
     for (int i = 0; i < FOUNDATIONS; i++)

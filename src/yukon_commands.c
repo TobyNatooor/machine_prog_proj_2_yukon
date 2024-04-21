@@ -4,6 +4,9 @@
 
 char *load_cards(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char input[64])
 {
+    for (int i = 0; i < COLUMNS; i++)
+        remove_cards(columns[i]);
+
     char *argument = get_argument(input);
     if (argument != NULL)
         return "Error getting input";
@@ -34,7 +37,7 @@ char *show_deck(struct card_llist *deck[CARD_COUNT])
     for (int i = 0; i < CARD_COUNT; i++)
     {
         if (deck[i] == NULL)
-            return "Error showing cards";
+            return "Missing cards in deck";
         deck[i]->hidden = 0;
     }
     return "OK";
