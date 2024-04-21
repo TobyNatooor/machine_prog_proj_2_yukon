@@ -113,10 +113,13 @@ char *save_deck(struct card_llist *deck[CARD_COUNT], char *argument)
     return "OK";
 }
 
-void quit_application(struct card_llist *columns[COLUMNS], int *playing)
+void quit_application(struct card_llist *foundations[FOUNDATIONS], struct card_llist *columns[COLUMNS], int *playing)
 {
+    for (int i = 0; i < FOUNDATIONS; i++)
+        remove_cards(foundations[i]);
     for (int i = 0; i < COLUMNS; i++)
         remove_cards(columns[i]);
+    
     *playing = 0;
 }
 
@@ -130,7 +133,7 @@ char *init_play_phase(struct card_llist *columns[COLUMNS], int *inPlayPhase)
     return "OK";
 }
 
-char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
+char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
 {
     if (!*inPlayPhase)
         return "Can't quit game if not in PLAY phase";
@@ -139,6 +142,8 @@ char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *deck[CAR
         return "Error moving cards to columns";
     for (int i = 0; i < CARD_COUNT; i++)
         deck[i]->hidden = 1;
+    for (int i = 0; i < FOUNDATIONS; i++)
+        foundations[i] = NULL;
     *inPlayPhase = 0;
     return "OK";
 }
@@ -235,13 +240,13 @@ char *move_card_from_foundation(struct card_llist *columns[COLUMNS], struct card
 char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
 {
     char *command = get_command(input);
-     // convert command to uppercase
+    // convert command to uppercase
     char *temp = command;
     for (int i = 0; command[i]; i++)
         command[i] = toupper(command[i]);
     command = temp;
 
-   char *argument = get_argument(input);
+    char *argument = get_argument(input);
     int result;
 
     if (strcmp(command, "LD") == 0) // Load deck
@@ -271,11 +276,11 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
     else if (strcmp(command, "SD") == 0) // Save deck
         return save_deck(deck, argument);
     else if (strcmp(command, "QQ") == 0) // Quit program
-        quit_application(columns, playing);
+        quit_application(foundations, columns, playing);
     else if (strcmp(command, "P") == 0) // Play
         return init_play_phase(columns, inPlayPhase);
     else if (strcmp(command, "Q") == 0) // Quit current game
-        return quit_game(columns, deck, inPlayPhase);
+        return quit_game(foundations, columns, deck, inPlayPhase);
     else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
         return move_cards_from_input(columns, foundations, input);
     else if (strlen(input) == 6 && input[2] == '-' && input[3] == '>') // move card from foundation to column
