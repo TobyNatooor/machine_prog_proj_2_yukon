@@ -148,7 +148,7 @@ char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *foundati
     return "OK";
 }
 
-char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64])
+char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64])
 {
     if (input[0] != 'C')
         return "Invalid command";
@@ -284,7 +284,7 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
     else if (strcmp(command, "Q") == 0) // Quit current game
         return quit_game(foundations, columns, deck, inPlayPhase);
     else if (strlen(command) == 9 && command[2] == ':' && command[5] == '-' && command[6] == '>') // move card(s)
-        return move_cards_from_input(columns, foundations, command);
+        return move_cards_from_columns(columns, foundations, command);
     else if (strlen(command) == 6 && command[2] == '-' && command[3] == '>') // move card from foundation to column
         return move_card_from_foundation(columns, foundations, command);
     else
