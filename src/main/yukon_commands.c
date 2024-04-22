@@ -119,7 +119,7 @@ void quit_application(struct card_llist *foundations[FOUNDATIONS], struct card_l
         remove_cards(foundations[i]);
     for (int i = 0; i < COLUMNS; i++)
         remove_cards(columns[i]);
-    
+
     *playing = 0;
 }
 
@@ -133,10 +133,11 @@ char *init_play_phase(struct card_llist *columns[COLUMNS], int *inPlayPhase)
     return "OK";
 }
 
-char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
+char *quit_game(struct card_llist *foundations[FOUNDATIONS], struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
 {
     if (!*inPlayPhase)
         return "Can't quit game if not in PLAY phase";
+    *inPlayPhase = 0;
     int result = deck_to_columns(columns, deck);
     if (result != 0)
         return "Error moving cards to columns";
@@ -144,7 +145,6 @@ char *quit_game(struct card_llist *columns[COLUMNS], struct card_llist *foundati
         deck[i]->hidden = 1;
     for (int i = 0; i < FOUNDATIONS; i++)
         foundations[i] = NULL;
-    *inPlayPhase = 0;
     return "OK";
 }
 
@@ -158,8 +158,11 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
 
     int value = face_value_to_int(input[3]);
     enum suits suit = input[4];
-    struct card_llist **from = &columns[input[1] - '0' - 1];
-    int fromIndex = get_card_index(*from, value, suit);
+    struct card_llist *from = columns[input[1] - '0' - 1];
+    if (from->hidden)
+        return "Invalid move";
+
+    int fromIndex = get_card_index(from, value, suit);
     if (fromIndex == -1)
         return "Card not found";
 
@@ -179,7 +182,7 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
     {
         if (input[8] < '1' || input[8] > '4')
             return "Invalid foundation number";
-        if ((*from)->next != NULL)
+        if (from->next != NULL)
             return "Invalid move";
 
         to = &foundations[toIndex];
@@ -195,13 +198,13 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
     else
         return "Invalid command";
 
-    int result = move_cards(from, to, fromIndex);
+    int result = move_cards(&from, to, fromIndex);
     if (result != 0)
         return "Error moving cards";
 
     if (fromIndex != 0)
     {
-        struct card_llist *fromCard = get_card_by_index(*from, fromIndex - 1);
+        struct card_llist *fromCard = get_card_by_index(from, fromIndex - 1);
         fromCard->hidden = 0;
     }
     return "OK";
