@@ -179,6 +179,8 @@ char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_lli
     {
         if (input[8] < '1' || input[8] > '4')
             return "Invalid foundation number";
+        if ((*from)->next != NULL)
+            return "Invalid move";
 
         to = &foundations[toIndex];
         struct card_llist *lastToCard = get_last_card(*to);
@@ -281,10 +283,10 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
         return init_play_phase(columns, inPlayPhase);
     else if (strcmp(command, "Q") == 0) // Quit current game
         return quit_game(foundations, columns, deck, inPlayPhase);
-    else if (strlen(input) == 9 && input[2] == ':' && input[5] == '-' && input[6] == '>') // move card(s)
-        return move_cards_from_input(columns, foundations, input);
-    else if (strlen(input) == 6 && input[2] == '-' && input[3] == '>') // move card from foundation to column
-        return move_card_from_foundation(columns, foundations, input);
+    else if (strlen(command) == 9 && command[2] == ':' && command[5] == '-' && command[6] == '>') // move card(s)
+        return move_cards_from_input(columns, foundations, command);
+    else if (strlen(command) == 6 && command[2] == '-' && command[3] == '>') // move card from foundation to column
+        return move_card_from_foundation(columns, foundations, command);
     else
         return "Unknown command";
 }
