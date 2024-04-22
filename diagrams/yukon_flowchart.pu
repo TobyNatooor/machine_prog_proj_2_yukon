@@ -1,0 +1,63 @@
+@startuml flowchart
+
+
+
+state StartUp{
+    state entrySU <<entryPoint>>
+    state exitP <<exitPoint>> 
+    state exitQ1 <<exitPoint>>
+
+    entrySU --> AllHidden
+    AllHidden : ""All cards set to "hidden"""
+
+    AllHidden --> ReadInputSU  
+
+    note left of ReadInputSU
+        ReadInputSU: Read input from user.
+        Return to this state after handling input.
+    end note
+
+    ReadInputSU : ""Display deck, last command and validation message""
+
+    ReadInputSU --> ShowAll : "SW"
+    ShowAll --> ReadInputSU
+    ShowAll : ""All cards set to "unhidden"""
+
+    ReadInputSU --> ShuffleRnd : "SR"
+    ShuffleRnd --> ReadInputSU
+    ShuffleRnd : ""Deck shuffled randomly""
+
+    ReadInputSU --> ShuffleSplit : "SI <split>"
+    ShuffleSplit --> ReadInputSU
+    ShuffleSplit : ""Deck interleafed shuffled""
+
+    ReadInputSU --> SavingDeck : "SD <filename>"
+    SavingDeck --> ReadInputSU
+    SavingDeck : ""Deck saved to .txt file""
+
+    ReadInputSU --> exitP : "P"
+
+    ReadInputSU --> exitQ1 : "Q"
+}
+
+state Play{
+    state entryP <<entryPoint>>
+    state exitQ2 <<exitPoint>>
+    entryP --> ReadInputP
+    ReadInputP --> ValidateMove : "<Game Moves>"
+    ValidateMove --> CheckWinCondition
+    CheckWinCondition --> ReadInputP : "Cards left on board"
+    CheckWinCondition --> CelebrateWin : "No cards left on board"
+    CelebrateWin --> [*]
+
+    ReadInputP --> exitQ2 : "Q"
+}
+
+[*] --> Init
+Init --> [*] : "QQ"
+Init --> entrySU : "LD <filename>"
+exitP --> entryP 
+exitQ1 --> [*]
+exitQ2 --> [*]
+
+@enduml
