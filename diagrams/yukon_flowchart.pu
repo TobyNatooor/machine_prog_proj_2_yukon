@@ -46,6 +46,7 @@ state Play{
     entryP --> ReadInputP
     ReadInputP --> ValidateMove : "<Game Moves>"
     ValidateMove --> CheckWinCondition
+    ValidateMove --> ReadInputP : "Invalid move"
     CheckWinCondition --> ReadInputP : "Cards left on board"
     CheckWinCondition --> CelebrateWin : "No cards left on board"
     CelebrateWin --> [*]
