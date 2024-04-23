@@ -20,16 +20,30 @@ add_executable(machine_prog_proj_2_yukon
         src/main/utils/utils.h
         src/main/main.c)
 
+enable_testing()
+
 add_executable(test_utils
-        src/tests/test_utils.c
+        src/tests/utils/test_utils.c
         src/main/utils/utils.c
         src/main/utils/utils.h
         src/main/model/card_llist.c
         src/main/model/card_llist.h)
-        
-enable_testing()
+add_test(NAME test_utils COMMAND test_utils)
 
-add_test(
-  NAME test_utils
-  COMMAND test_utils
-  )
+add_executable(test_card_llist
+        src/tests/model/test_card_llist.c
+        src/main/model/card_llist.c
+        src/main/model/card_llist.h)
+add_test(NAME test_card_llist COMMAND test_card_llist)
+      
+add_executable(test_console_view
+        src/tests/view/test_console_view.c
+        src/main/model/card_llist.c
+        src/main/model/card_llist.h
+        src/main/view/console_view.c
+        src/main/view/console_view.h
+        src/main/yukon_commands.c
+        src/main/yukon_commands.h
+        src/main/utils/utils.c
+        src/main/utils/utils.h)
+add_test(NAME test_console_view COMMAND test_console_view)

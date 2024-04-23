@@ -1,4 +1,4 @@
-#include "../main/utils/utils.h"
+#include "../../main/utils/utils.h"
 #include <assert.h>
 
 int main(void)
