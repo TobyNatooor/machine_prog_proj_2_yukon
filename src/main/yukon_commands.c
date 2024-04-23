@@ -159,7 +159,7 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
     int value = face_value_to_int(input[3]);
     enum suits suit = input[4];
     struct card_llist *from = columns[input[1] - '0' - 1];
-    if (from->hidden)
+    if (!from->hidden)
         return "Invalid move";
 
     int fromIndex = get_card_index(from, value, suit);
