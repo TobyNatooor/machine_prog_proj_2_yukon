@@ -180,13 +180,14 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
     }
     else if (input[7] == 'F')
     {
-        if (input[8] < '1' || input[8] > '4')
-            return "Invalid foundation number";
-        if (from->next != NULL)
-            return "Invalid move";
-
         to = &foundations[toIndex];
         struct card_llist *lastToCard = get_last_card(*to);
+        struct card_llist *lastFromCard = get_last_card(from);
+
+        if (input[8] < '1' || input[8] > '4')
+            return "Invalid foundation number";
+        if (lastFromCard->next != NULL)
+            return "Invalid move";
         if (lastToCard == NULL)
         {
             if (value != 1)
