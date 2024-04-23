@@ -152,60 +152,61 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
 {
     if (input[0] != 'C')
         return "Invalid command";
-
-    if (input[1] < '1' || input[1] > '7')
-        return "Invalid column";
+    int fromIndex = input[1] - '0' - 1;
+    if (fromIndex < 0 || fromIndex >= COLUMNS)
+        return "Invalid column number";
 
     int value = face_value_to_int(input[3]);
     enum suits suit = input[4];
-    struct card_llist *from = columns[input[1] - '0' - 1];
-    if (!from->hidden)
-        return "Invalid move";
-
-    int fromIndex = get_card_index(from, value, suit);
-    if (fromIndex == -1)
+    struct card_llist **from = &columns[fromIndex];
+    int fromCardIndex = get_card_index(*from, value, suit);
+    if (fromCardIndex == -1)
         return "Card not found";
+    struct card_llist *moveCard = get_card_by_index(*from, fromCardIndex);
+    if (moveCard->hidden)
+        return "Invalid move";
 
     int toIndex = input[8] - '0' - 1;
     struct card_llist **to;
     if (input[7] == 'C')
     {
-        if (input[8] < '1' || input[8] > '7')
+        if (toIndex < 0 || toIndex >= COLUMNS)
             return "Invalid column number";
 
         to = &columns[toIndex];
         struct card_llist *lastToCard = get_last_card(*to);
-        if (lastToCard->value - 1 != value || lastToCard->suit == suit)
+        if (lastToCard != NULL && (lastToCard->value != value + 1 || lastToCard->suit == suit))
             return "Invalid move";
     }
     else if (input[7] == 'F')
     {
+        if (toIndex < 0 || toIndex >= FOUNDATIONS)
+            return "Invalid foundation number";
+
         to = &foundations[toIndex];
         struct card_llist *lastToCard = get_last_card(*to);
-        struct card_llist *lastFromCard = get_last_card(from);
 
-        if (input[8] < '1' || input[8] > '4')
-            return "Invalid foundation number";
-        if (lastFromCard->next != NULL)
+        if (moveCard->next != NULL)
             return "Invalid move";
         if (lastToCard == NULL)
         {
             if (value != 1)
                 return "Invalid move";
         }
-        else if (lastToCard->value != value + 1 || lastToCard->suit != suit)
+        else if (lastToCard != NULL && (lastToCard->value != value + 1 || lastToCard->suit != suit))
             return "Invalid move";
     }
     else
         return "Invalid command";
 
-    int result = move_cards(&from, to, fromIndex);
+    int result = move_cards(from, to, fromCardIndex);
     if (result != 0)
         return "Error moving cards";
 
-    if (fromIndex != 0)
+    // reveal next card in column if hidden
+    if (fromCardIndex != 0)
     {
-        struct card_llist *fromCard = get_card_by_index(from, fromIndex - 1);
+        struct card_llist *fromCard = get_card_by_index(*from, fromCardIndex - 1);
         fromCard->hidden = 0;
     }
     return "OK";
