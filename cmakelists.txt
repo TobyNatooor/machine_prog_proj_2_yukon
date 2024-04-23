@@ -47,3 +47,13 @@ add_executable(test_console_view
         src/main/utils/utils.c
         src/main/utils/utils.h)
 add_test(NAME test_console_view COMMAND test_console_view)
+
+add_executable(test_yukon_commands
+        src/tests/view/test_console_view.c
+        src/main/model/card_llist.c
+        src/main/model/card_llist.h
+        src/main/yukon_commands.c
+        src/main/yukon_commands.h
+        src/main/utils/utils.c
+        src/main/utils/utils.h)
+add_test(NAME test_yukon_commands COMMAND test_yukon_commands)
