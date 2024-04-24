@@ -7,6 +7,10 @@ void addOneCardToNullPointer(void);
 void addTwoCardsToNullPointer(void);
 void addThreeSizeShouldBeThree(void);
 void getCardByIndex(void);
+void addThreeCardsGetCardIdx(void);
+void moveCardToNullList(void);
+void moveCardMidListCheckFrom(void);
+void moveCardShouldSetPointersToNull(void);
 
 int main(void) {
     linkTwoCardsFindLast();
@@ -15,6 +19,10 @@ int main(void) {
     addTwoCardsToNullPointer();
     addThreeSizeShouldBeThree();
     getCardByIndex();
+    addThreeCardsGetCardIdx();
+    moveCardToNullList();
+    moveCardMidListCheckFrom();
+    moveCardShouldSetPointersToNull();
     return 0;
 }
 
@@ -179,8 +187,156 @@ void getCardByIndex(void){
     free(list);
 }
 
-void moveCardShouldSetPointersToNull(void){
-    
+void addThreeCardsGetCardIdx(void){
+    struct card_llist **list = (struct card_llist **)malloc(sizeof(struct card_llist));
+    *list = NULL;
+    struct card_llist *card1 = (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card2 = (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card3 = (struct card_llist *)malloc(sizeof(struct card_llist));
+
+    int expectedValue1 = 1;
+    int expectedValue2 = 2;
+    int expectedValue3 = 3;
+    char expectedSuit1 = 'H';
+    char expectedSuit2 = 'S';
+    char expectedSuit3 = 'C';
+
+    card1->value = expectedValue1;
+    card1->suit = expectedSuit1;
+    card1->next = NULL;
+    card2->value = expectedValue2;
+    card2->suit = expectedSuit2;
+    card2->next = NULL;
+    card3->value = expectedValue3;
+    card3->suit = expectedSuit3;
+    card3->next = NULL;
+
+    add_card(list, card1);
+    add_card(list, card2);
+    add_card(list, card3);
+
+    int idxCard1 = get_card_index(*list, expectedValue1, expectedSuit1);
+    int idxCard2 = get_card_index(*list, expectedValue2, expectedSuit2);
+    int idxCard3 = get_card_index(*list, expectedValue3, expectedSuit3);
+
+    assert(idxCard1 == 0 && idxCard2 == 1 && idxCard3 == 2);
 }
 
+void moveCardToNullList(void){
+    struct card_llist **list1 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    struct card_llist **list2 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    *list1 = NULL;
+    *list2 = NULL;
+    struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
 
+    int cardValue = 2;
+    char cardSuit = 'C';
+
+    card->value = cardValue;
+    card->suit = cardSuit;
+    card->next = NULL;
+
+    add_card(list1, card);
+
+    int srcIdx = get_card_index(*list1, cardValue, cardSuit);
+
+    //Testing move_cards() function
+    move_cards(list1, list2, srcIdx);
+
+    int destIdx = get_card_index(*list2, cardValue, cardSuit);
+
+    assert(destIdx == 0);
+
+    free(list1);
+    free(list2);
+    free(card);
+}
+
+void moveCardMidListCheckFrom(void){
+    struct card_llist **list1 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    struct card_llist **list2 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    *list1 = NULL;
+    *list2 = NULL;
+    struct card_llist *card1_1= (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card1_2= (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card1_3= (struct card_llist *)malloc(sizeof(struct card_llist));
+
+    int cardValue1 = 1;
+    int cardValue2 = 2;
+    int cardValue3 = 3;
+    char cardSuit1 = 'H';
+    char cardSuit2 = 'S';
+    char cardSuit3 = 'C';
+
+    card1_1->value = cardValue1;
+    card1_1->suit = cardSuit1;
+    card1_1->next = NULL;
+    card1_2->value = cardValue2;
+    card1_2->suit = cardSuit2;
+    card1_2->next = NULL;
+    card1_3->value = cardValue3;
+    card1_3->suit = cardSuit3;
+    card1_3->next = NULL;
+
+    add_card(list1, card1_1);
+    add_card(list1, card1_2);
+    add_card(list1, card1_3);
+
+    move_cards(list1, list2, 1);
+
+    struct card_llist *lastInList1 = get_last_card(*list1);
+
+    int foundValue = lastInList1->value;
+    char foundSuit = lastInList1->suit;
+
+    assert(foundValue == cardValue1 && foundSuit == cardSuit1);
+
+    free(card1_1);
+    free(card1_2);
+    free(card1_3);
+    free(list1);
+    free(list2);
+}
+
+void moveCardShouldSetPointersToNull(void){
+    struct card_llist **list1 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    struct card_llist **list2 = (struct card_llist **)malloc(sizeof(struct card_llist));
+    *list1 = NULL;
+    *list2 = NULL;
+    struct card_llist *card1_1= (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card1_2= (struct card_llist *)malloc(sizeof(struct card_llist));
+    struct card_llist *card1_3= (struct card_llist *)malloc(sizeof(struct card_llist));
+
+    int cardValue1 = 1;
+    int cardValue2 = 2;
+    int cardValue3 = 3;
+    char cardSuit1 = 'H';
+    char cardSuit2 = 'S';
+    char cardSuit3 = 'C';
+
+    card1_1->value = cardValue1;
+    card1_1->suit = cardSuit1;
+    card1_1->next = NULL;
+    card1_2->value = cardValue2;
+    card1_2->suit = cardSuit2;
+    card1_2->next = NULL;
+    card1_3->value = cardValue3;
+    card1_3->suit = cardSuit3;
+    card1_3->next = NULL;
+
+    add_card(list1, card1_1);
+    add_card(list1, card1_2);
+    add_card(list1, card1_3);
+
+    move_cards(list1, list2, 1);
+
+    struct card_llist *lastInList1 = get_last_card(*list1);
+
+    assert(lastInList1->next == NULL);
+
+    free(card1_1);
+    free(card1_2);
+    free(card1_3);
+    free(list1);
+    free(list2);
+}
