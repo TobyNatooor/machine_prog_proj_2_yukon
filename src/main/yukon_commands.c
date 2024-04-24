@@ -193,7 +193,7 @@ char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_l
             if (value != 1)
                 return "Invalid move";
         }
-        else if (lastToCard != NULL && (lastToCard->value != value + 1 || lastToCard->suit != suit))
+        else if (lastToCard != NULL && (lastToCard->value + 1 != value || lastToCard->suit != suit))
             return "Invalid move";
     }
     else
