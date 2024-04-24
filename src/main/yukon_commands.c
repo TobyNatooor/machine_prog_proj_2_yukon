@@ -148,104 +148,102 @@ char *quit_game(struct card_llist *foundations[FOUNDATIONS], struct card_llist *
     return "OK";
 }
 
-char *move_cards_from_columns(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64])
+char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char command[64])
 {
-    if (input[0] != 'C')
-        return "Invalid command";
-    int fromIndex = input[1] - '0' - 1;
-    if (fromIndex < 0 || fromIndex >= COLUMNS)
-        return "Invalid column number";
-
-    int value = face_value_to_int(input[3]);
-    enum suits suit = input[4];
-    struct card_llist **from = &columns[fromIndex];
-    int fromCardIndex = get_card_index(*from, value, suit);
-    if (fromCardIndex == -1)
-        return "Card not found";
-    struct card_llist *moveCard = get_card_by_index(*from, fromCardIndex);
-    if (moveCard->hidden)
-        return "Invalid move";
-
-    int toIndex = input[8] - '0' - 1;
+    struct card_llist **from;
     struct card_llist **to;
-    if (input[7] == 'C')
-    {
-        if (toIndex < 0 || toIndex >= COLUMNS)
-            return "Invalid column number";
+    int fromIndex = command[1] - '0' - 1;
+    int toIndex;
+    int cardIndex;
+    char fromChar = command[0];
+    char toChar;
 
-        to = &columns[toIndex];
-        struct card_llist *lastToCard = get_last_card(*to);
-        if (lastToCard != NULL && (lastToCard->value != value + 1 || lastToCard->suit == suit))
-            return "Invalid move";
-    }
-    else if (input[7] == 'F')
-    {
-        if (toIndex < 0 || toIndex >= FOUNDATIONS)
-            return "Invalid foundation number";
+    if ((fromChar == 'C' && (fromIndex < 0 || fromIndex >= COLUMNS)))
+        return "Invalid column number";
+    if ((fromChar == 'F' && (fromIndex < 0 || fromIndex >= FOUNDATIONS)))
+        return "Invalid foundation number";
 
-        to = &foundations[toIndex];
-        struct card_llist *lastToCard = get_last_card(*to);
-
-        if (moveCard->next != NULL)
-            return "Invalid move";
-        if (lastToCard == NULL)
-        {
-            if (value != 1)
-                return "Invalid move";
-        }
-        else if (lastToCard != NULL && (lastToCard->value != value + 1 || lastToCard->suit != suit))
-            return "Invalid move";
-    }
+    if (fromChar == 'C')
+        from = &columns[fromIndex];
+    else if (fromChar == 'F')
+        from = &foundations[fromIndex];
     else
         return "Invalid command";
 
-    int result = move_cards(from, to, fromCardIndex);
-    if (result != 0)
-        return "Error moving cards";
-
-    // reveal next card in column if hidden
-    if (fromCardIndex != 0)
+    if (strlen(command) == 9 && command[2] == ':' && command[5] == '-' && command[6] == '>')
     {
-        struct card_llist *fromCard = get_card_by_index(*from, fromCardIndex - 1);
-        fromCard->hidden = 0;
+        toChar = command[7];
+        toIndex = command[8] - '0' - 1;
+        int value = face_value_to_int(command[3]);
+        enum suits suit = command[4];
+        cardIndex = get_card_index(*from, value, suit);
     }
-    return "OK";
-}
+    else if (strlen(command) == 6 && command[2] == '-' && command[3] == '>')
+    {
+        toChar = command[4];
+        toIndex = command[5] - '0' - 1;
+        cardIndex = get_cards_size(*from) - 1;
+    }
+    else
+        return "Unknown command";
 
-char *move_card_from_foundation(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64])
-{
-    if (input[0] != 'F' || input[4] != 'C')
-        return "Invalid command";
-
-    if (input[1] < '1' || input[1] > '4')
+    if ((toChar == 'C' && (toIndex < 0 || toIndex >= COLUMNS)))
+        return "Invalid column number";
+    if ((toChar == 'F' && (toIndex < 0 || toIndex >= FOUNDATIONS)))
         return "Invalid foundation number";
 
-    if (input[5] < '1' || input[5] > '7')
-        return "Invalid column number";
+    if (toChar == 'C')
+        to = &columns[toIndex];
+    else if (toChar == 'F')
+        to = &foundations[toIndex];
+    else
+        return "Invalid command";
 
-    struct card_llist **from = &foundations[input[1] - '0' - 1];
-    struct card_llist **to = &columns[input[5] - '0' - 1];
-    struct card_llist *fromCard = get_last_card(*from);
-    if (fromCard == NULL)
-        return "No card in foundation";
-
-    struct card_llist *toCard = get_last_card(*to);
-    if (toCard == NULL)
+    if (toChar == 'C')
     {
-        if (fromCard->value != 13)
+        struct card_llist *fromCard = get_card_by_index(*from, cardIndex);
+        if (fromCard == NULL || fromCard->hidden)
+            return "Card not found";
+        struct card_llist *toCard = get_last_card(*to);
+        if (toCard == NULL)
+        {
+            if (fromCard->value != 13)
+                return "Only a king can be moved to an empty column";
+        }
+        else if (fromCard->value != toCard->value - 1)
             return "Invalid move";
     }
-    else if (toCard->value != fromCard->value + 1 || toCard->suit == fromCard->suit)
-        return "Invalid move";
+    else if (toChar == 'F')
+    {
+        struct card_llist *fromCard = get_card_by_index(*from, cardIndex);
+        if (fromCard == NULL)
+            return "Card not found";
+        struct card_llist *toCard = get_last_card(*to);
+        if (toCard == NULL)
+        {
+            if (fromCard->value != 1)
+                return "Only an ace can be moved to an empty foundation";
+        }
+        else if (fromCard->value != toCard->value + 1 || fromCard->suit != toCard->suit)
+            return "Invalid move";
+    }
 
-    int result = move_cards(from, to, get_cards_size(*from) - 1);
+    int result = move_cards(from, to, cardIndex);
     if (result != 0)
         return "Error moving cards";
+
+    struct card_llist *fromCard = get_last_card(*from);
+    if (fromCard != NULL)
+        fromCard->hidden = 0;
+
     return "OK";
 }
 
 char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
 {
+    if (strlen(input) == 0)
+        return "No input provided";
+
     char *command = get_command(input);
     // convert command to uppercase
     char *temp = command;
@@ -288,10 +286,8 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
         return init_play_phase(columns, inPlayPhase);
     else if (strcmp(command, "Q") == 0) // Quit current game
         return quit_game(foundations, columns, deck, inPlayPhase);
-    else if (strlen(command) == 9 && command[2] == ':' && command[5] == '-' && command[6] == '>') // move card(s)
-        return move_cards_from_columns(columns, foundations, command);
-    else if (strlen(command) == 6 && command[2] == '-' && command[3] == '>') // move card from foundation to column
-        return move_card_from_foundation(columns, foundations, command);
+    else if (strstr(command, "->") != NULL) // move card(s)
+        return move_cards_from_input(columns, foundations, command);
     else
         return "Unknown command";
 }
