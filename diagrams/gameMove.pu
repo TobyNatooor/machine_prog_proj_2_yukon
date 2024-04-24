@@ -1,0 +1,46 @@
+@startuml
+
+start
+
+
+
+repeat :Player input; <<input>>
+backward :Display error message; <<output>>
+repeat while (Is input valid format?) is (no)
+-> yes;
+:Move Card;
+
+    if (Is card in src column) then (no)
+    else (yes)
+        if (Move conditions ok?) then (no)
+        else (yes)
+            :Move card;
+            :Display valid message; <<output>>
+            if (Which move) then (column to column)
+                ':Continue game;
+                
+            
+            else (column to foundation)
+                if (game won?) then (no)
+                    ':Continue game;
+                    
+                else (yes)
+                    :Display win message; <<output>>
+                    detach
+endif
+endif
+:continue game;
+detach
+endif
+endif
+
+:Display error message; <<output>>
+detach
+
+
+    
+
+
+
+
+@enduml
