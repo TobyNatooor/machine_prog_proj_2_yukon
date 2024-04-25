@@ -65,9 +65,10 @@ int start_console_game()
 
     int playing = 1;
     int inPlayPhase = 0;
-    char input[64];
-    char message[64] = "";
-    char lastCommand[64] = "";    
+    char *input = malloc(64 * sizeof(char));
+    input[0] = '\0';
+    char *message = malloc(64 * sizeof(char));
+    message[0] = '\0';
 
     // game loop
     while (playing)
@@ -77,14 +78,12 @@ int start_console_game()
             strcpy(message, "Error displaying game");
 
         printf("LAST Command: ");
-        printf("%s", lastCommand);
+        printf("%s", input);
         printf("\nMessage: ");
         printf("%s", message);
         printf("\nINPUT > ");
         fgets(input, 64, stdin);
         input[strcspn(input, "\n")] = 0; // remove newline
-
-        strcpy(lastCommand, input);
 
         char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
         strcpy(message, response);
@@ -95,4 +94,6 @@ int start_console_game()
             playing = 0;
         }
     }
+    free(input);
+    free(message);
 }

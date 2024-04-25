@@ -146,7 +146,7 @@ int won_game(struct card_llist *columns[COLUMNS])
     return 1;
 }
 
-char *get_command(char input[64])
+char *get_command(char *input)
 {
     char *copy = strdup(input);
     char *command = strtok(copy, " ");
@@ -155,7 +155,7 @@ char *get_command(char input[64])
     return command;
 }
 
-char *get_argument(char input[64])
+char *get_argument(char *input)
 {
     char *copy = strdup(input);
     char *command = strtok(copy, " ");

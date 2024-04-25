@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include "yukon_commands.h"
 
-char *load_cards(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char input[64])
+char *load_cards(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char *input)
 {
     for (int i = 0; i < COLUMNS; i++)
         remove_cards(columns[i]);
@@ -43,7 +43,7 @@ char *show_deck(struct card_llist *deck[CARD_COUNT])
     return "OK";
 }
 
-char *shuffle_si(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char input[64])
+char *shuffle_si(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], char *input)
 {
     char *argument = get_argument(input);
 
@@ -148,7 +148,7 @@ char *quit_game(struct card_llist *foundations[FOUNDATIONS], struct card_llist *
     return "OK";
 }
 
-char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char command[64])
+char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *command)
 {
     struct card_llist **from;
     struct card_llist **to;
@@ -239,7 +239,7 @@ char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_lli
     return "OK";
 }
 
-char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char input[64], int *inPlayPhase, int *playing)
+char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *input, int *inPlayPhase, int *playing)
 {
     if (strlen(input) == 0)
         return "No input provided";
