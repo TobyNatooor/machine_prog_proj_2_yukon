@@ -49,7 +49,7 @@ add_executable(test_console_view
 add_test(NAME test_console_view COMMAND test_console_view)
 
 add_executable(test_yukon_commands
-        src/tests/view/test_console_view.c
+        src/tests/test_yukon_commands.c
         src/main/model/card_llist.c
         src/main/model/card_llist.h
         src/main/yukon_commands.c
