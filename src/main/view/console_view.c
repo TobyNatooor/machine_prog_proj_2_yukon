@@ -96,7 +96,7 @@ int start_console_game()
         if (won && inPlayPhase)
         {
             printf("You won!\n");
-            playing = 0;
+            quit_application(foundations, columns, &playing);
         }
     }
     free(input);
