@@ -73,6 +73,8 @@ int start_console_game()
     // game loop
     while (playing)
     {
+        int won = won_game(columns);
+
         int result = display_game(columns, foundations);
         if (result != 0)
             strcpy(message, "Error displaying game");
@@ -82,12 +84,15 @@ int start_console_game()
         printf("\nMessage: ");
         printf("%s", message);
         printf("\nINPUT > ");
-        fgets(input, 64, stdin);
-        input[strcspn(input, "\n")] = 0; // remove newline
 
-        char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
-        strcpy(message, response);
-        int won = won_game(columns);
+        if (!won || !inPlayPhase)
+        {
+            fgets(input, 64, stdin);
+            input[strcspn(input, "\n")] = 0; // remove newline
+
+            char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
+            strcpy(message, response);
+        }
         if (won && inPlayPhase)
         {
             printf("You won!\n");
