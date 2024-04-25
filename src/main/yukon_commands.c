@@ -123,13 +123,13 @@ void quit_application(struct card_llist *foundations[FOUNDATIONS], struct card_l
     *playing = 0;
 }
 
-char *init_play_phase(struct card_llist *columns[COLUMNS], int *inPlayPhase)
+char *init_play_phase(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase)
 {
     if (*inPlayPhase)
         return "Already in PLAY phase";
 
     *inPlayPhase = 1;
-    arrange_cards(columns);
+    arrange_cards(columns, deck);
     return "OK";
 }
 
@@ -283,7 +283,7 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
     else if (strcmp(command, "QQ") == 0) // Quit program
         quit_application(foundations, columns, playing);
     else if (strcmp(command, "P") == 0) // Play
-        return init_play_phase(columns, inPlayPhase);
+        return init_play_phase(columns, deck, inPlayPhase);
     else if (strcmp(command, "Q") == 0) // Quit current game
         return quit_game(foundations, columns, deck, inPlayPhase);
     else if (strstr(command, "->") != NULL) // move card(s)

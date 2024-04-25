@@ -64,13 +64,24 @@ int load_cards_from_array(struct card_llist *deck[CARD_COUNT], const char cards[
     return 0;
 }
 
-int arrange_cards(struct card_llist *columns[COLUMNS])
+int arrange_cards(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT])
 {
     const int columnSizes[COLUMNS] = {1, 6, 7, 8, 9, 10, 11};
     const int columnsIndexShown[COLUMNS] = {0, 1, 2, 3, 4, 5, 6};
 
-    for (int i = 0; i < COLUMNS - 1; i++)
-        move_cards(&columns[i], &columns[i + 1], columnSizes[i]);
+    for (int i = 0; i < CARD_COUNT; i++)
+        deck[i]->next = NULL;
+    for (int i = 0; i < COLUMNS; i++)
+        columns[i] = NULL;
+    int j = 0;
+    for (int i = 0; i < CARD_COUNT; i++)
+    {
+        while (get_cards_size(columns[j % COLUMNS]) == columnSizes[j % COLUMNS])
+            j++;
+        struct card_llist *card = deck[i];
+        add_card(&columns[j % COLUMNS], card);
+        j++;
+    }
     for (int i = 0; i < COLUMNS; i++)
         show_after_index(columns[i], columnsIndexShown[i]);
 
