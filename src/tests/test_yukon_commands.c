@@ -243,7 +243,31 @@ void test_move_cards_from_input()
     assert(foundations[0]->suit == 'C');
 }
 
-void test_handle_input() 
+void test_handle_input()
 {
+    struct card_llist *deck[CARD_COUNT];
+    struct card_llist *columns[COLUMNS];
+    struct card_llist *foundations[FOUNDATIONS];
+    for (int i = 0; i < CARD_COUNT; i++)
+        deck[i] = NULL;
+    for (int i = 0; i < COLUMNS; i++)
+        columns[i] = NULL;
+    for (int i = 0; i < FOUNDATIONS; i++)
+        foundations[i] = NULL;
+
+    int playing = 1;
+    int inPlayPhase = 0;
+    char *input = malloc(64 * sizeof(char));
+    input[0] = '\0';
+    char *message = malloc(64 * sizeof(char));
+    message[0] = '\0';
+
+    char *response = handle_input(deck, columns, foundations, "", &inPlayPhase, &playing);
+    assert(strcmp(response, "No input provided") == 0);
+    response = handle_input(deck, columns, foundations, "xxx", &inPlayPhase, &playing);
+    assert(strcmp(response, "Unknown command") == 0);
     
+
+    free(input);
+    free(message);
 }
