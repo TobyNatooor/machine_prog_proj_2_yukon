@@ -1,1 +1,10 @@
 void test_load_cards();
+void test_show_deck();
+void test_shuffle_si();
+void test_shuffle_sr();
+void test_save_deck();
+void test_quit_application();
+void test_init_play_phase();
+void test_quit_game();
+void test_move_cards_from_input();
+void test_handle_input();

@@ -48,6 +48,8 @@ add_executable(test_console_view
         src/main/utils/utils.h)
 add_test(NAME test_console_view COMMAND test_console_view)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/tests/resources/test_load_cards_cards_1.txt 
+        ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 add_executable(test_yukon_commands
         src/tests/test_yukon_commands.c
         src/main/model/card_llist.c
