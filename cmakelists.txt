@@ -5,19 +5,27 @@ set(CMAKE_C_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
 
-set(SDL2_PATH C:/Users/tobia/dev/SDL2-2.30.2/x86_64-w64-mingw32)
-set(SDL2_IMAGE_PATH C:/Users/tobia/dev/SDL2_image-2.8.2/x86_64-w64-mingw32)
-
+set(SDL2_PATH                   C:/Users/tobia/dev/SDL2-2.30.2/x86_64-w64-mingw32)
+set(SDL2_IMAGE_PATH             C:/Users/tobia/dev/SDL2_image-2.8.2/x86_64-w64-mingw32)
+set(SDL2_TTF_PATH               C:/Users/tobia/dev/SDL2_ttf-2.22.0/x86_64-w64-mingw32)
+ 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
+find_package(SDL2_ttf REQUIRED)
+include_directories(${SDL2_TTF_INCLUDE_DIRS})
 
-include_directories(.)
-include_directories(src)
-include_directories(src/model/card_llist)
-include_directories(src/utils)
-include_directories(src/view)
+include_directories(
+        .
+        src
+        src/main
+        src/main/model
+        src/main/view
+        src/main/view/console
+        src/main/view/SDL
+        src/main/utils
+)
 
 add_executable(yukon_console
         src/main/model/card_llist.c
@@ -43,8 +51,8 @@ add_executable(yukon_sdl
         src/main/view/SDL/sdl_gui.c
         src/main/view/SDL/sdl_gui.h
         src/main/view/SDL/sdl_start.c)
-
-target_link_libraries(yukon_sdl ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
+ 
+target_link_libraries(yukon_sdl ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
 
 enable_testing()
 
