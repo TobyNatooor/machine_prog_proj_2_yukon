@@ -65,7 +65,6 @@ int start_console_game()
 
     int playing = 1;
     int inPlayPhase = 0;
-    int loaded = 0;
     char *input = malloc(64 * sizeof(char));
     input[0] = '\0';
     char *message = malloc(64 * sizeof(char));
@@ -90,7 +89,7 @@ int start_console_game()
         {
             fgets(input, 64, stdin);
             input[strcspn(input, "\n")] = 0; // remove newline
-            char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing, &loaded);
+            char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
             strcpy(message, response);
         }
         if (won && inPlayPhase)

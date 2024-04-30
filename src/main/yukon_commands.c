@@ -233,7 +233,7 @@ char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_lli
     return "OK";
 }
 
-char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *input, int *inPlayPhase, int *playing, int *loaded)
+char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *input, int *inPlayPhase, int *playing)
 {
     if (strlen(input) == 0)
         return "No input provided";
@@ -251,38 +251,40 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
     {
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
-        *loaded = 1;
         return load_cards(columns, deck, argument);
     }
     else if (strcmp(command, "SW") == 0) // Show
     {
-        if (!*loaded) return "No deck loaded";
+        if (deck[0] == NULL) return "No deck loaded";
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return show_deck(deck);
     }
     else if (strcmp(command, "SI") == 0) // Shuffle, split and interleaves cards
     {
-        if (!*loaded) return "No deck loaded";
+        if (deck[0] == NULL) return "No deck loaded";
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return shuffle_si(columns, deck, argument);
     }
     else if (strcmp(command, "SR") == 0) // Shuffle, insert randomly into new deck
     {
-        if (!*loaded) return "No deck loaded";
+        if (deck[0] == NULL) return "No deck loaded";
         if (*inPlayPhase)
             return "Command not available in the PLAY phase";
         return shuffle_sr(columns, deck);
     }
     else if (strcmp(command, "SD") == 0) // Save deck
-    {   if (!*loaded) return "No deck loaded";
+    {   if (deck[0] == NULL) return "No deck loaded";
         return save_deck(deck, argument);
     }
     else if (strcmp(command, "QQ") == 0) // Quit program
         quit_application(foundations, columns, playing);
     else if (strcmp(command, "P") == 0) // Play
+    {
+        if (deck[0] == NULL) return "No deck loaded";
         return init_play_phase(columns, deck, inPlayPhase);
+    }
     else if (strcmp(command, "Q") == 0) // Quit current game
         return quit_game(foundations, columns, deck, inPlayPhase);
     else if (strstr(command, "->") != NULL) // move card(s)

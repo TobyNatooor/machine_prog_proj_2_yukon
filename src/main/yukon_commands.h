@@ -9,4 +9,4 @@ void quit_application(struct card_llist *foundations[FOUNDATIONS], struct card_l
 char *init_play_phase(struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase);
 char *quit_game(struct card_llist *foundations[FOUNDATIONS], struct card_llist *columns[COLUMNS], struct card_llist *deck[CARD_COUNT], int *inPlayPhase);
 char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *command);
-char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *input, int *inPlayPhase, int *playing, int *loaded);
+char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], char *input, int *inPlayPhase, int *playing);
