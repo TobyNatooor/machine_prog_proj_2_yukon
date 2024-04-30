@@ -1,7 +1,17 @@
 cmake_minimum_required(VERSION 3.27)
 project(machine_prog_proj_2_yukon C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 17)
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
+
+set(SDL2_PATH C:/Users/tobia/dev/SDL2-2.30.2/x86_64-w64-mingw32)
+set(SDL2_IMAGE_PATH C:/Users/tobia/dev/SDL2_image-2.8.2/x86_64-w64-mingw32)
+
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIR})
+find_package(SDL2_image REQUIRED)
+include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 
 include_directories(.)
 include_directories(src)
@@ -9,16 +19,32 @@ include_directories(src/model/card_llist)
 include_directories(src/utils)
 include_directories(src/view)
 
-add_executable(machine_prog_proj_2_yukon
+add_executable(yukon_console
         src/main/model/card_llist.c
         src/main/model/card_llist.h
-        src/main/view/console_view.c
-        src/main/view/console_view.h
+        src/main/view/console/console_view.c
+        src/main/view/console/console_view.h
         src/main/yukon_commands.c
         src/main/yukon_commands.h
         src/main/utils/utils.c
         src/main/utils/utils.h
-        src/main/main.c)
+        src/main/view/console/console_start.c)
+
+add_executable(yukon_sdl
+        src/main/model/card_llist.c
+        src/main/model/card_llist.h
+        src/main/view/console/console_view.c
+        src/main/view/console/console_view.h
+        src/main/yukon_commands.c
+        src/main/yukon_commands.h
+        src/main/utils/utils.c
+        src/main/utils/utils.h
+        src/main/view/SDL/sdl_defines.h
+        src/main/view/SDL/sdl_gui.c
+        src/main/view/SDL/sdl_gui.h
+        src/main/view/SDL/sdl_start.c)
+
+target_link_libraries(yukon_sdl ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
 enable_testing()
 
@@ -40,8 +66,8 @@ add_executable(test_console_view
         src/tests/view/test_console_view.c
         src/main/model/card_llist.c
         src/main/model/card_llist.h
-        src/main/view/console_view.c
-        src/main/view/console_view.h
+        src/main/view/console/console_view.c
+        src/main/view/console/console_view.h
         src/main/yukon_commands.c
         src/main/yukon_commands.h
         src/main/utils/utils.c
@@ -59,3 +85,4 @@ add_executable(test_yukon_commands
         src/main/utils/utils.c
         src/main/utils/utils.h)
 add_test(NAME test_yukon_commands COMMAND test_yukon_commands)
+
