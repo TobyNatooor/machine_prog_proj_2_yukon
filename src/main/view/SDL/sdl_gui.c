@@ -1,6 +1,27 @@
 #include "sdl_gui.h"
 
-int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS])
+static const enum suits suit_list[] = {HEARTS, DIAMONDS, CLUBS, SPADES};
+
+int load_card_textures(SDL_Renderer *renderer, SDL_Texture *cardTextures[CARD_COUNT + 1])
+{
+    for (int i = 0; i < CARD_COUNT; i++)
+    {
+        char filename[64];
+        sprintf(filename, "../images/cards_pack/PNG/Medium/%i%c.png", i % 13 + 1, suit_list[i / 13]);
+        SDL_Surface *cardSurface = IMG_Load(filename);
+        if (cardSurface == NULL)
+            return -1;
+        cardTextures[i] = SDL_CreateTextureFromSurface(renderer, cardSurface);
+    }
+    SDL_Surface *backSide = IMG_Load("../images/cards_pack/PNG/Medium/Back Blue 2.png");
+    if (backSide == NULL)
+        return -1;
+    cardTextures[CARD_COUNT] = SDL_CreateTextureFromSurface(renderer, backSide);
+
+    return 0;
+}
+
+int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS], SDL_Texture *cardTextures[CARD_COUNT + 1])
 {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 
@@ -8,23 +29,39 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
     {
         SDL_RenderDrawRect(renderer, &(SDL_Rect){30 + 120 * i, 30, CARD_WIDTH, CARD_HEIGHT});
         struct card_llist *card = columns[i];
-        while (card != NULL)
+        for (int j = 0; card != NULL; j++)
         {
-            char filename[100]; // Adjust the size as needed
-            sprintf(filename, "../images/cards_pack/PNG/Medium/%i%c.png", card->value, card->suit);
-            SDL_Surface *cardSurface = IMG_Load(filename);
-            if (cardSurface == NULL)
-                return -1;
-            SDL_Texture *AC = SDL_CreateTextureFromSurface(renderer, cardSurface);
-            SDL_RenderCopy(renderer, AC, NULL, &(SDL_Rect){30 + 120 * i, 30, CARD_WIDTH, CARD_HEIGHT});
+            if (card->hidden)
+                SDL_RenderCopy(renderer, cardTextures[CARD_COUNT], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 20, CARD_WIDTH, CARD_HEIGHT});
+            else
+            {
+                int cardSuitInt;
+                switch (card->suit)
+                {
+                case HEARTS:
+                    cardSuitInt = 0;
+                    break;
+                case DIAMONDS:
+                    cardSuitInt = 1;
+                    break;
+                case CLUBS:
+                    cardSuitInt = 2;
+                    break;
+                case SPADES:
+                    cardSuitInt = 3;
+                    break;
+                }
+                SDL_RenderCopy(renderer, cardTextures[card->value + 13 * cardSuitInt - 1], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 20, CARD_WIDTH, CARD_HEIGHT});
+            }
+
             card = card->next;
         }
     }
     for (int i = 0; i < FOUNDATIONS; i++)
     {
         SDL_RenderDrawRect(renderer, &(SDL_Rect){960, 30 + 120 * i, CARD_WIDTH, CARD_HEIGHT});
-        struct card_llist *card = columns[i];
-        while (card != NULL)
+        struct card_llist *card = foundations[i];
+        for (int j = 0; card != NULL; j++)
         {
             char filename[100]; // Adjust the size as needed
             SDL_Surface *cardSurface = IMG_Load(filename);
@@ -57,14 +94,18 @@ void start_sdl_game()
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
 
-    SDL_Window *window = SDL_CreateWindow("SDL_ttf Example", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Window *window = SDL_CreateWindow("Yukon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED |SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
 
     TTF_Font *font = TTF_OpenFont("../fonts/PlayFairDisplay-Regular.ttf", 24);
     SDL_Color color = {255, 255, 255}; // White
 
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, input, color);
     SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    SDL_Texture *cardTextures[CARD_COUNT + 1];
+    if (load_card_textures(renderer, cardTextures) != 0)
+        return;
 
     int running = 1;
 
@@ -103,7 +144,7 @@ void start_sdl_game()
         }
         SDL_SetRenderDrawColor(renderer, 0, 80, 0, 255);
         SDL_RenderClear(renderer);
-        int result = render_cards(renderer, columns, foundations);
+        int result = render_cards(renderer, columns, foundations, cardTextures);
         if (result != 0)
             return;
 
