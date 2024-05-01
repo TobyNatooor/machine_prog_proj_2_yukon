@@ -206,7 +206,7 @@ char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_lli
             if (fromCard->value != 13)
                 return "Only a king can be moved to an empty column";
         }
-        else if (fromCard->value != toCard->value - 1)
+        else if (fromCard->value != toCard->value - 1 || fromCard->suit == toCard->suit)
             return "Invalid move";
     }
     else if (toChar == 'F')
