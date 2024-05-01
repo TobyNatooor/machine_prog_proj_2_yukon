@@ -222,6 +222,8 @@ char *move_cards_from_input(struct card_llist *columns[COLUMNS], struct card_lli
         }
         else if (fromCard->value != toCard->value + 1 || fromCard->suit != toCard->suit)
             return "Invalid move";
+        if(fromCard->next != NULL)
+            return "Only one card can be moved to a foundation";
     }
 
     int result = move_cards(from, to, cardIndex);
@@ -278,6 +280,8 @@ char *handle_input(struct card_llist *deck[CARD_COUNT], struct card_llist *colum
     }
     else if (strcmp(command, "SD") == 0) // Save deck
     {   if (deck[0] == NULL) return "No deck loaded";
+        if (*inPlayPhase)
+            return "Command not available in the PLAY phase";
         return save_deck(deck, argument);
     }
     else if (strcmp(command, "QQ") == 0) // Quit program
