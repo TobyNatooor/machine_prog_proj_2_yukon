@@ -60,18 +60,29 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
     for (int i = 0; i < FOUNDATIONS; i++)
     {
         SDL_RenderDrawRect(renderer, &(SDL_Rect){960, 30 + 120 * i, CARD_WIDTH, CARD_HEIGHT});
-        struct card_llist *card = foundations[i];
-        for (int j = 0; card != NULL; j++)
+        struct card_llist *card = get_last_card(foundations[i]);
+        if (card != NULL)
         {
-            char filename[100]; // Adjust the size as needed
-            SDL_Surface *cardSurface = IMG_Load(filename);
-            if (cardSurface == NULL)
-                return -1;
-            SDL_Texture *AC = SDL_CreateTextureFromSurface(renderer, cardSurface);
-            SDL_RenderCopy(renderer, AC, NULL, &(SDL_Rect){960, 30 + 120 * i, CARD_WIDTH, CARD_HEIGHT});
-            card = card->next;
+            int cardSuitInt;
+            switch (card->suit)
+            {
+            case HEARTS:
+                cardSuitInt = 0;
+                break;
+            case DIAMONDS:
+                cardSuitInt = 1;
+                break;
+            case CLUBS:
+                cardSuitInt = 2;
+                break;
+            case SPADES:
+                cardSuitInt = 3;
+                break;
+            }
+            SDL_RenderCopy(renderer, cardTextures[card->value + 13 * cardSuitInt - 1], NULL, &(SDL_Rect){960, 30 + 120 * i, CARD_WIDTH, CARD_HEIGHT});
         }
     }
+    return 0;
 }
 
 void start_sdl_game()
@@ -95,7 +106,7 @@ void start_sdl_game()
     TTF_Init();
 
     SDL_Window *window = SDL_CreateWindow("Yukon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED |SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
 
     TTF_Font *font = TTF_OpenFont("../fonts/PlayFairDisplay-Regular.ttf", 24);
     SDL_Color color = {255, 255, 255}; // White
@@ -106,6 +117,8 @@ void start_sdl_game()
     SDL_Texture *cardTextures[CARD_COUNT + 1];
     if (load_card_textures(renderer, cardTextures) != 0)
         return;
+
+    SDL_StartTextInput();
 
     int running = 1;
 
@@ -124,15 +137,43 @@ void start_sdl_game()
                 {
                     input[strlen(input) - 1] = '\0';
                 }
-                else if (e.key.keysym.sym >= SDLK_SPACE && e.key.keysym.sym <= SDLK_z)
+                else if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z || 48 <= e.key.keysym.sym && e.key.keysym.sym <= 57 || e.key.keysym.sym == SDLK_SPACE || e.key.keysym.sym == 45 || e.key.keysym.sym == 46 || e.key.keysym.sym == 60)
                 {
-                    char newChar[2] = {e.key.keysym.sym, '\0'};
-                    strcat(input, newChar);
+                    if (SDL_GetModState() & KMOD_SHIFT)
+                    {
+                        SDL_Log("%s", input);
+                        if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z)
+                        {
+                            char newChar[2] = {e.key.keysym.sym - 32, '\0'};
+                            strcat(input, newChar);
+                        }
+                        else if (e.key.keysym.sym == 45)
+                        {
+                            char newChar[2] = {'_', '\0'};
+                            strcat(input, newChar);
+                        }
+                        else if (e.key.keysym.sym == 46)
+                        {
+                            char newChar[2] = {':', '\0'};
+                            strcat(input, newChar);
+                        }
+                        else if (e.key.keysym.sym == 60)
+                        {
+                            char newChar[2] = {'>', '\0'};
+                            strcat(input, newChar);
+                        }
+                    }
+                    else
+                    {
+                        char newChar[2] = {e.key.keysym.sym, '\0'};
+                        strcat(input, newChar);
+                    }
                 }
                 else if (e.key.keysym.sym == SDLK_RETURN)
                 {
                     char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
-                    strcpy(input, response);
+                    strcpy(input, "");
+                    SDL_Log("Response: %s", response);
                 }
 
                 // Re-render text
@@ -156,8 +197,12 @@ void start_sdl_game()
         SDL_RenderPresent(renderer);
     }
 
+    SDL_StopTextInput();
+
     SDL_FreeSurface(textSurface);
     SDL_DestroyTexture(textTexture);
+    for (int i = 0; i < CARD_COUNT + 1; i++)
+        SDL_DestroyTexture(cardTextures[i]);
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
