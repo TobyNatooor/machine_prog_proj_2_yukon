@@ -43,6 +43,8 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
         else if (j == 2)
             return -1;
     }
+    if(i < 51)
+        return -1;
     fclose(cards_file);
 
     return 0;
