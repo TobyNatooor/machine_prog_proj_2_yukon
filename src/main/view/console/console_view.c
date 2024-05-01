@@ -5,7 +5,7 @@
 
 int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundations[FOUNDATIONS])
 {
-    printf("C1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
+    printf("\nC1\tC2\tC3\tC4\tC5\tC6\tC7\n\n");
 
     int colsDone;
     // print rows until all columns are done and all rows are printed
