@@ -16,9 +16,10 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
 
     int i = 0;
     char character, faceValue, suit;
-    for (int j = 0; (character = fgetc(cards_file)) != EOF; ++j)
+    for (int j = 0; 1; ++j)
     {
-        if (character == DELIMITER)
+        character = fgetc(cards_file);
+        if (character == DELIMITER || character == EOF)
         {
             //printf("Loop nr.: %d - storing card %c%c\n", i, faceValue, suit);
             if(i > 0 && checkDuplicateInArray(tempCards, (i-1), faceValue, suit))
@@ -28,6 +29,8 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
             //printf("Loop nr.: %d - stored card %c%c\n", i, tempCards[i][0], tempCards[i][1]);
             i++;
             j = -1;
+            if(character == EOF)
+                break;
             continue;
 
         }
