@@ -48,9 +48,7 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
         return -1;
     }
     fclose(cards_file);
-    if (load_cards_from_array(deck, tempCards) != 0)
-        return -1;
-    return 0;
+    return load_cards_from_array(deck, tempCards);
 }
 
 int checkDuplicateInArray(char cards[CARD_COUNT][CARD_SIZE], int index, char faceValue, char suit)
