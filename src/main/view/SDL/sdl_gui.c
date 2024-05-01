@@ -32,7 +32,7 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
         for (int j = 0; card != NULL; j++)
         {
             if (card->hidden)
-                SDL_RenderCopy(renderer, cardTextures[CARD_COUNT], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 20, CARD_WIDTH, CARD_HEIGHT});
+                SDL_RenderCopy(renderer, cardTextures[CARD_COUNT], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 40, CARD_WIDTH, CARD_HEIGHT});
             else
             {
                 int cardSuitInt;
@@ -51,7 +51,7 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
                     cardSuitInt = 3;
                     break;
                 }
-                SDL_RenderCopy(renderer, cardTextures[card->value + 13 * cardSuitInt - 1], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 20, CARD_WIDTH, CARD_HEIGHT});
+                SDL_RenderCopy(renderer, cardTextures[card->value + 13 * cardSuitInt - 1], NULL, &(SDL_Rect){30 + 120 * i, 30 + j * 40, CARD_WIDTH, CARD_HEIGHT});
             }
 
             card = card->next;
@@ -101,6 +101,10 @@ void start_sdl_game()
     int inPlayPhase = 0;
     char *input = malloc(64 * sizeof(char));
     input[0] = '\0';
+    char *message = malloc(64 * sizeof(char));
+    message[0] = '\0';
+    char *lastCommand = malloc(64 * sizeof(char));
+    lastCommand[0] = '\0';
 
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -111,8 +115,12 @@ void start_sdl_game()
     TTF_Font *font = TTF_OpenFont("../fonts/PlayFairDisplay-Regular.ttf", 24);
     SDL_Color color = {255, 255, 255}; // White
 
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, input, color);
-    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_Surface *inputSurface = TTF_RenderText_Solid(font, input, color);
+    SDL_Texture *inputTexture = SDL_CreateTextureFromSurface(renderer, inputSurface);
+    SDL_Surface *messageSurface = TTF_RenderText_Solid(font, message, color);
+    SDL_Texture *messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
+    SDL_Surface *lastCommandSurface = TTF_RenderText_Solid(font, lastCommand, color);
+    SDL_Texture *lastCommandTexture = SDL_CreateTextureFromSurface(renderer, lastCommandSurface);
 
     SDL_Texture *cardTextures[CARD_COUNT + 1];
     if (load_card_textures(renderer, cardTextures) != 0)
@@ -171,15 +179,27 @@ void start_sdl_game()
                 else if (e.key.keysym.sym == SDLK_RETURN)
                 {
                     char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
+                    strcpy(message, "Message: ");
+                    strcat(message, response);
+                    strcpy(lastCommand, "LAST Command: ");
+                    strcat(lastCommand, input);
                     strcpy(input, "");
+
                     SDL_Log("Response: %s", response);
                 }
 
-                // Re-render text
-                SDL_FreeSurface(textSurface);
-                SDL_DestroyTexture(textTexture);
-                textSurface = TTF_RenderText_Solid(font, input, color);
-                textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+                SDL_FreeSurface(inputSurface);
+                SDL_DestroyTexture(inputTexture);
+                SDL_FreeSurface(messageSurface);
+                SDL_DestroyTexture(messageTexture);
+                SDL_FreeSurface(lastCommandSurface);
+                SDL_DestroyTexture(lastCommandTexture);
+                inputSurface = TTF_RenderText_Solid(font, input, color);
+                inputTexture = SDL_CreateTextureFromSurface(renderer, inputSurface);
+                messageSurface = TTF_RenderText_Solid(font, message, color);
+                messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
+                lastCommandSurface = TTF_RenderText_Solid(font, lastCommand, color);
+                lastCommandTexture = SDL_CreateTextureFromSurface(renderer, lastCommandSurface);
             }
         }
         SDL_SetRenderDrawColor(renderer, 0, 80, 0, 255);
@@ -188,18 +208,32 @@ void start_sdl_game()
         if (result != 0)
             return;
 
-        if (textTexture)
+        if (inputTexture && inputSurface)
         {
-            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - textSurface->h, textSurface->w, textSurface->h};
-            SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - inputSurface->h, inputSurface->w, inputSurface->h};
+            SDL_RenderCopy(renderer, inputTexture, NULL, &renderQuad);
+        }
+        if (messageTexture && messageSurface)
+        {
+            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - messageSurface->h * 2, messageSurface->w, messageSurface->h};
+            SDL_RenderCopy(renderer, messageTexture, NULL, &renderQuad);
+        }
+        if (lastCommandTexture && lastCommandSurface)
+        {
+            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - lastCommandSurface->h * 3, lastCommandSurface->w, lastCommandSurface->h};
+            SDL_RenderCopy(renderer, lastCommandTexture, NULL, &renderQuad);
         }
         SDL_RenderPresent(renderer);
     }
 
     SDL_StopTextInput();
 
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(inputSurface);
+    SDL_DestroyTexture(inputTexture);
+    SDL_FreeSurface(messageSurface);
+    SDL_DestroyTexture(messageTexture);
+    SDL_FreeSurface(lastCommandSurface);
+    SDL_DestroyTexture(lastCommandTexture);
     for (int i = 0; i < CARD_COUNT + 1; i++)
         SDL_DestroyTexture(cardTextures[i]);
     TTF_CloseFont(font);
