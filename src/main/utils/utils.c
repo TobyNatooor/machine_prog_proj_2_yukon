@@ -19,6 +19,8 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
     {
         if (character == DELIMITER)
         {
+            if(i > 0 && checkDuplicate(deck, (i-1), faceValue, suit))
+                return -1;
             // create card
             struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
             card->value = face_value_to_int(faceValue);
@@ -41,8 +43,20 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
         else if (j == 2)
             return -1;
     }
+    if(deck[CARD_COUNT-1] == NULL)
+        return -1;
     fclose(cards_file);
 
+    return 0;
+}
+
+int checkDuplicate(struct card_llist *deck[CARD_COUNT], int index, char faceValue, char suit)
+{
+    for (int i = 0; i < index; i++)
+    {
+        if (deck[i]->value == face_value_to_int(faceValue) && deck[i]->suit == suit)
+            return 1;
+    }
     return 0;
 }
 

@@ -89,7 +89,6 @@ int start_console_game()
         {
             fgets(input, 64, stdin);
             input[strcspn(input, "\n")] = 0; // remove newline
-
             char *response = handle_input(deck, columns, foundations, input, &inPlayPhase, &playing);
             strcpy(message, response);
         }
