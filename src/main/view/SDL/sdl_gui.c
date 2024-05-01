@@ -141,7 +141,6 @@ void start_sdl_game()
                 {
                     if (SDL_GetModState() & KMOD_SHIFT)
                     {
-                        SDL_Log("%s", input);
                         if (e.key.keysym.sym >= SDLK_a && e.key.keysym.sym <= SDLK_z)
                         {
                             char newChar[2] = {e.key.keysym.sym - 32, '\0'};
