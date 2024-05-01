@@ -2,6 +2,7 @@
 
 int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
 {
+    char tempCards[CARD_COUNT][CARD_SIZE];
     FILE *cards_file = fopen(fileName, "r");
     // if 'cards.txt' isn't found, try in the parent directory
     if (cards_file == NULL)
@@ -19,21 +20,16 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
     {
         if (character == DELIMITER)
         {
-            if(i > 0 && checkDuplicate(deck, (i-1), faceValue, suit))
+            //printf("Loop nr.: %d - storing card %c%c\n", i, faceValue, suit);
+            if(i > 0 && checkDuplicateInArray(tempCards, (i-1), faceValue, suit))
                 return -1;
-            // create card
-            struct card_llist *card = (struct card_llist *)malloc(sizeof(struct card_llist));
-            card->value = face_value_to_int(faceValue);
-            card->suit = suit;
-            card->hidden = 1;
-            card->next = NULL;
-
-            deck[i] = card;
-            if (deck[i] == NULL)
-                return -1;
+            tempCards[i][0] = faceValue;
+            tempCards[i][1] = suit;
+            //printf("Loop nr.: %d - stored card %c%c\n", i, tempCards[i][0], tempCards[i][1]);
             i++;
             j = -1;
             continue;
+
         }
 
         if (j == 0)
@@ -42,11 +38,25 @@ int load_cards_from_file(struct card_llist *deck[CARD_COUNT], char fileName[])
             suit = character;
         else if (j == 2)
             return -1;
-    }
-    if(deck[CARD_COUNT-1] == NULL)
-        return -1;
-    fclose(cards_file);
 
+    }
+    if(tempCards[CARD_COUNT-1][0] == NULL) {
+        printf("Does this activate?\n");
+        return -1;
+    }
+    fclose(cards_file);
+    if (load_cards_from_array(deck, tempCards) != 0)
+        return -1;
+    return 0;
+}
+
+int checkDuplicateInArray(char cards[CARD_COUNT][CARD_SIZE], int index, char faceValue, char suit)
+{
+    for (int i = 0; i < index; i++)
+    {
+        if (cards[i][0] == faceValue && cards[i][1] == suit)
+            return 1;
+    }
     return 0;
 }
 

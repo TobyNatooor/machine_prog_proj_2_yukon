@@ -14,3 +14,4 @@ int won_game(struct card_llist *columns[COLUMNS]);
 char *get_command(char *input);
 char *get_argument(char *input);
 int checkDuplicate(struct card_llist *deck[CARD_COUNT], int index, char faceValue, char suit);
+int checkDuplicateInArray(char cards[CARD_COUNT][CARD_SIZE], int index, char faceValue, char suit);
