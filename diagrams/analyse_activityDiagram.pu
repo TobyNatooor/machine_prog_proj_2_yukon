@@ -1,0 +1,23 @@
+@startuml
+
+start
+
+if (Check command input?) then (yes)
+  :Proceed to identify the command type;
+
+else (no)
+  :No input provided ;
+endif
+
+:Load deck;
+:Show deck;
+
+repeat :Request for input;
+
+backward:Show 'Unknown command' message;
+repeat while (Does command input is valid?) is (no) not (yes)
+  : Play game;
+
+stop
+
+@enduml
