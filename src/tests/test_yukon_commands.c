@@ -145,6 +145,8 @@ void test_save_deck()
                 assert(character == cards[i][0]);
             else if (j == 1)
                 assert(character == cards[i][1]);
+            else
+                break;
     }
     fclose(saved_file);
 }
