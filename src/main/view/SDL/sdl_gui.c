@@ -85,6 +85,9 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
     return 0;
 }
 
+//ADD Quit pop up.
+
+
 void start_sdl_game()
 {
     struct card_llist *deck[CARD_COUNT];
@@ -108,29 +111,120 @@ void start_sdl_game()
 
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
+    IMG_Init(IMG_INIT_PNG);
 
     SDL_Window *window = SDL_CreateWindow("Yukon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
 
-    TTF_Font *font = TTF_OpenFont("../fonts/PlayFairDisplay-Regular.ttf", 24);
-    SDL_Color color = {255, 255, 255}; // White
+    //TTF_Font *font = TTF_OpenFont("../fonts/PlayfairDisplay-Regular.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("../fonts/DiaryOfAn8BitMage-lYDD.ttf", 24);
+    TTF_Font *smallFont = TTF_OpenFont("../fonts/DiaryOfAn8BitMage-lYDD.ttf", 18);  // Smaller size for active console
+    SDL_Color color = {255, 255, 255}; // Font color: White
 
-    SDL_Surface *inputSurface = TTF_RenderText_Solid(font, input, color);
-    SDL_Texture *inputTexture = SDL_CreateTextureFromSurface(renderer, inputSurface);
-    SDL_Surface *messageSurface = TTF_RenderText_Solid(font, message, color);
-    SDL_Texture *messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
-    SDL_Surface *lastCommandSurface = TTF_RenderText_Solid(font, lastCommand, color);
-    SDL_Texture *lastCommandTexture = SDL_CreateTextureFromSurface(renderer, lastCommandSurface);
+    //Render the welcome message
+    SDL_Surface *welcomeSurface = TTF_RenderText_Solid(font, "Welcome to Yukon game! Click anywhere on this screen to start the game.", color);
+    SDL_Texture *welcomeTexture = SDL_CreateTextureFromSurface(renderer, welcomeSurface);
+    SDL_SetRenderDrawColor(renderer, 255, 205, 210, 100);  // Welcome Background color
+
+    // Load the image
+    SDL_Surface *imageSurface = IMG_Load("../images/yukon_icon200.png");
+    SDL_Texture *imageTexture = SDL_CreateTextureFromSurface(renderer, imageSurface);
+
+    // Render "Input:" message immediately with small font
+    SDL_Surface *commandSurface = TTF_RenderText_Solid(smallFont, "Input:", color);
+    SDL_Texture *commandTexture = SDL_CreateTextureFromSurface(renderer, commandSurface);
+
+    // Get the width and height of the "Input:" text
+    int commandWidth = 0;
+    int commandHeight = 0;
+    SDL_QueryTexture(commandTexture, NULL, NULL, &commandWidth, &commandHeight);
+
+    // Define a padding value
+    int padding = 10;
+
+    // Calculate the positions for the LAST Command, Message, and Input texts
+    int baseY = WINDOW_HEIGHT - (commandHeight + 20); // Bottom padding of 20
+    int messageY = baseY - commandHeight * 2- padding;         // Message above Input
+    int lastCommandY = messageY - commandHeight- padding;      // LAST Command above Message
+
+
+    SDL_RenderClear(renderer);
+
+    // Render the image
+    if (imageTexture && imageSurface)
+    {
+        SDL_Rect imageQuad = {WINDOW_WIDTH / 2 - imageSurface->w / 2, WINDOW_HEIGHT / 2 - imageSurface->h - 50, imageSurface->w, imageSurface->h};
+        SDL_RenderCopy(renderer, imageTexture, NULL, &imageQuad);
+    }
+
+    // Render the welcome message
+    if (welcomeTexture && welcomeSurface)
+    {
+        SDL_Rect renderQuad = {50, WINDOW_HEIGHT / 2 - welcomeSurface->h, welcomeSurface->w, welcomeSurface->h};
+        SDL_RenderCopy(renderer, welcomeTexture, NULL, &renderQuad);
+        SDL_RenderPresent(renderer);
+    }
+
+    // Wait for a key press to continue
+    int continueGame = 0;
+    SDL_Event e;
+    while (!continueGame)
+    {
+        while (SDL_PollEvent(&e))
+        {
+            if (e.type == SDL_QUIT)
+            {
+                continueGame = 1;
+                playing = 0;  // Exit the game
+            }
+            else if (e.type == SDL_KEYDOWN || e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                continueGame = 1;  // Proceed to the game loop
+            }
+        }
+    }
+
+    // Clean up welcome message resources
+    SDL_FreeSurface(welcomeSurface);
+    SDL_DestroyTexture(welcomeTexture);
+    SDL_FreeSurface(imageSurface);
+    SDL_DestroyTexture(imageTexture);
 
     SDL_Texture *cardTextures[CARD_COUNT + 1];
     if (load_card_textures(renderer, cardTextures) != 0)
         return;
 
+    SDL_SetRenderDrawColor(renderer, 0, 96, 100, 100);
+    SDL_RenderClear(renderer);
+
+    int result = render_cards(renderer, columns, foundations, cardTextures);
+    if (result != 0)
+        return;
+
+    // Render the "Insert command:" message on the left bottom corner
+    if (commandTexture && commandSurface)
+    {
+        SDL_Rect commandRenderQuad = {20, WINDOW_HEIGHT - commandSurface->h - 20, commandSurface->w, commandSurface->h};
+        SDL_RenderCopy(renderer, commandTexture, NULL, &commandRenderQuad);
+    }
+
+    // Set up the initial input position to be right after the "Input:" text
+    SDL_Rect inputRenderQuad = {20 + commandWidth + 10, baseY, 0, 0};
+
+    SDL_Surface *inputSurface = TTF_RenderText_Solid(smallFont, input, color);
+    SDL_Texture *inputTexture = SDL_CreateTextureFromSurface(renderer, inputSurface);
+
+    SDL_Surface *messageSurface = TTF_RenderText_Solid(smallFont, message, color);
+    SDL_Texture *messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
+    SDL_Surface *lastCommandSurface = TTF_RenderText_Solid(smallFont, lastCommand, color);
+    SDL_Texture *lastCommandTexture = SDL_CreateTextureFromSurface(renderer, lastCommandSurface);
+
+    SDL_RenderPresent(renderer);
+
     SDL_StartTextInput();
 
     int running = 1;
 
-    SDL_Event e;
     while (running)
     {
         while (SDL_PollEvent(&e) != 0)
@@ -190,44 +284,69 @@ void start_sdl_game()
 
                 SDL_FreeSurface(inputSurface);
                 SDL_DestroyTexture(inputTexture);
+
                 SDL_FreeSurface(messageSurface);
                 SDL_DestroyTexture(messageTexture);
                 SDL_FreeSurface(lastCommandSurface);
                 SDL_DestroyTexture(lastCommandTexture);
+
                 inputSurface = TTF_RenderText_Solid(font, input, color);
                 inputTexture = SDL_CreateTextureFromSurface(renderer, inputSurface);
+
+                // Update the width of the input text for rendering position adjustment
+                int inputWidth;
+                SDL_QueryTexture(inputTexture, NULL, NULL, &inputWidth, NULL);
+                inputRenderQuad.w = inputWidth;
+                inputRenderQuad.h = commandHeight;
+
                 messageSurface = TTF_RenderText_Solid(font, message, color);
                 messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
                 lastCommandSurface = TTF_RenderText_Solid(font, lastCommand, color);
                 lastCommandTexture = SDL_CreateTextureFromSurface(renderer, lastCommandSurface);
             }
         }
-        SDL_SetRenderDrawColor(renderer, 0, 80, 0, 255);
+
+        //Original color
+        //SDL_SetRenderDrawColor(renderer, 0, 80, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 96, 100, 100);// the board background color
         SDL_RenderClear(renderer);
         int result = render_cards(renderer, columns, foundations, cardTextures);
         if (result != 0)
             return;
 
-        if (inputTexture && inputSurface)
-        {
-            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - inputSurface->h, inputSurface->w, inputSurface->h};
-            SDL_RenderCopy(renderer, inputTexture, NULL, &renderQuad);
-        }
-        if (messageTexture && messageSurface)
-        {
-            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - messageSurface->h * 2, messageSurface->w, messageSurface->h};
-            SDL_RenderCopy(renderer, messageTexture, NULL, &renderQuad);
-        }
+        // Render the LAST Command text
         if (lastCommandTexture && lastCommandSurface)
         {
-            SDL_Rect renderQuad = {0, WINDOW_HEIGHT - lastCommandSurface->h * 3, lastCommandSurface->w, lastCommandSurface->h};
-            SDL_RenderCopy(renderer, lastCommandTexture, NULL, &renderQuad);
+            SDL_Rect lastCommandRenderQuad = {20, lastCommandY, lastCommandSurface->w, lastCommandSurface->h};
+            SDL_RenderCopy(renderer, lastCommandTexture, NULL, &lastCommandRenderQuad);
         }
+
+        // Render the Message text
+        if (messageTexture && messageSurface)
+        {
+            SDL_Rect messageRenderQuad = {20, messageY, messageSurface->w, messageSurface->h};
+            SDL_RenderCopy(renderer, messageTexture, NULL, &messageRenderQuad);
+        }
+
+        // Render the "Input:" prompt
+        if (commandTexture && commandSurface)
+        {
+            SDL_Rect commandRenderQuad = {20, baseY, commandSurface->w, commandSurface->h};
+            SDL_RenderCopy(renderer, commandTexture, NULL, &commandRenderQuad);
+        }
+
+        // Render the input text right after "Input:"
+        if (inputTexture && inputSurface)
+        {
+            SDL_RenderCopy(renderer, inputTexture, NULL, &inputRenderQuad);
+        }
+
         SDL_RenderPresent(renderer);
     }
 
     SDL_StopTextInput();
 
+    // Clean up resources and quit
     SDL_FreeSurface(inputSurface);
     SDL_DestroyTexture(inputTexture);
     SDL_FreeSurface(messageSurface);
@@ -237,8 +356,11 @@ void start_sdl_game()
     for (int i = 0; i < CARD_COUNT + 1; i++)
         SDL_DestroyTexture(cardTextures[i]);
     TTF_CloseFont(font);
+    TTF_CloseFont(smallFont);
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
     SDL_Quit();
+    IMG_Quit();  // Quit SDL_image
 }

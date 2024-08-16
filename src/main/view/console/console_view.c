@@ -52,6 +52,11 @@ int display_game(struct card_llist *columns[COLUMNS], struct card_llist *foundat
 
 int start_console_game()
 {
+    // Display the welcome message
+    printf("Welcome to Yukon game!\n");
+    printf("Please load the deck to start the game by inserting the command 'LD' here below:\n");
+    fflush(stdout);
+
     // initialize game
     struct card_llist *deck[CARD_COUNT];
     struct card_llist *columns[COLUMNS];
