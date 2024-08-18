@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "sdl_gui.h"
 
 static const enum suits suit_list[] = {HEARTS, DIAMONDS, CLUBS, SPADES};
@@ -86,7 +87,90 @@ int render_cards(SDL_Renderer *renderer, struct card_llist *columns[COLUMNS], st
 }
 
 //ADD Quit pop up.
+bool confirm_quit(SDL_Renderer *renderer, TTF_Font *font, SDL_Color color)
+{
+    SDL_Surface *messageSurface = TTF_RenderText_Solid(font, "Do you really want to quit?", color);
+    SDL_Texture *messageTexture = SDL_CreateTextureFromSurface(renderer, messageSurface);
 
+    SDL_Surface *yesSurface = TTF_RenderText_Solid(font, "Yes", color);
+    SDL_Texture *yesTexture = SDL_CreateTextureFromSurface(renderer, yesSurface);
+
+    SDL_Surface *noSurface = TTF_RenderText_Solid(font, "No", color);
+    SDL_Texture *noTexture = SDL_CreateTextureFromSurface(renderer, noSurface);
+
+    int messageWidth, messageHeight;
+    SDL_QueryTexture(messageTexture, NULL, NULL, &messageWidth, &messageHeight);
+
+    int yesWidth, yesHeight;
+    SDL_QueryTexture(yesTexture, NULL, NULL, &yesWidth, &yesHeight);
+
+    int noWidth, noHeight;
+    SDL_QueryTexture(noTexture, NULL, NULL, &noWidth, &noHeight);
+
+    SDL_Rect messageRect = {WINDOW_WIDTH / 2 - messageWidth / 2, WINDOW_HEIGHT / 2 - messageHeight - 20, messageWidth, messageHeight};
+    SDL_Rect yesRect = {WINDOW_WIDTH / 2 - yesWidth - 20, WINDOW_HEIGHT / 2 + 20, yesWidth, yesHeight};
+    SDL_Rect noRect = {WINDOW_WIDTH / 2 + 20, WINDOW_HEIGHT / 2 + 20, noWidth, noHeight};
+
+    bool running = true;
+    bool quitConfirmed = false;
+    SDL_Event e;
+
+    while (running)
+    {
+        // Handle events
+        while (SDL_PollEvent(&e))
+        {
+            if (e.type == SDL_QUIT)
+            {
+                running = false;
+                quitConfirmed = true;
+            }
+            else if (e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    running = false;
+                    quitConfirmed = false;
+                }
+            }
+            else if (e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                int x, y;
+                SDL_GetMouseState(&x, &y);
+                if (x >= yesRect.x && x <= yesRect.x + yesRect.w && y >= yesRect.y && y <= yesRect.y + yesRect.h)
+                {
+                    running = false;
+                    quitConfirmed = true;
+                }
+                else if (x >= noRect.x && x <= noRect.x + noRect.w && y >= noRect.y && y <= noRect.y + noRect.h)
+                {
+                    running = false;
+                    quitConfirmed = false;
+                }
+            }
+        }
+
+        // Render the popup
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200); // Semi-transparent background
+        SDL_RenderClear(renderer);
+
+        SDL_RenderCopy(renderer, messageTexture, NULL, &messageRect);
+        SDL_RenderCopy(renderer, yesTexture, NULL, &yesRect);
+        SDL_RenderCopy(renderer, noTexture, NULL, &noRect);
+
+        SDL_RenderPresent(renderer);
+    }
+
+    // Clean up
+    SDL_FreeSurface(messageSurface);
+    SDL_DestroyTexture(messageTexture);
+    SDL_FreeSurface(yesSurface);
+    SDL_DestroyTexture(yesTexture);
+    SDL_FreeSurface(noSurface);
+    SDL_DestroyTexture(noTexture);
+
+    return quitConfirmed;
+}
 
 void start_sdl_game()
 {
@@ -227,14 +311,26 @@ void start_sdl_game()
 
     while (running)
     {
+        SDL_Event e;
         while (SDL_PollEvent(&e) != 0)
         {
             if (e.type == SDL_QUIT)
             {
-                running = 0;
+                if (confirm_quit(renderer,smallFont,color))
+                {
+                    running = 0;
+                }
             }
             else if (e.type == SDL_KEYDOWN)
             {
+                if (e.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    if (confirm_quit(renderer, smallFont, color))
+                    {
+                        running = 0;
+                    }
+                }
+
                 if (e.key.keysym.sym == SDLK_BACKSPACE && strlen(input) > 0)
                 {
                     input[strlen(input) - 1] = '\0';
@@ -310,6 +406,43 @@ void start_sdl_game()
         //SDL_SetRenderDrawColor(renderer, 0, 80, 0, 255);
         SDL_SetRenderDrawColor(renderer, 0, 96, 100, 100);// the board background color
         SDL_RenderClear(renderer);
+
+        //Start to render the card row
+        // Render the column labels C1 to C7
+        for (int i = 0; i < COLUMNS; i++) {
+            char label[3];
+            snprintf(label, sizeof(label), "C%d", i + 1);
+            SDL_Surface *labelSurface = TTF_RenderText_Solid(smallFont, label, color);
+            SDL_Texture *labelTexture = SDL_CreateTextureFromSurface(renderer, labelSurface);
+
+            int labelWidth, labelHeight;
+            SDL_QueryTexture(labelTexture, NULL, NULL, &labelWidth, &labelHeight);
+
+            SDL_Rect labelRect = {30 + 120 * i + CARD_WIDTH / 2 - labelWidth / 2, 10, labelWidth, labelHeight};
+            SDL_RenderCopy(renderer, labelTexture, NULL, &labelRect);
+
+            SDL_FreeSurface(labelSurface);
+            SDL_DestroyTexture(labelTexture);
+        }
+
+        // Render the foundation labels F1 to F4
+        for (int i = 0; i < FOUNDATIONS; i++) {
+            char label[3];
+            snprintf(label, sizeof(label), "F%d", i + 1);
+            SDL_Surface *labelSurface = TTF_RenderText_Solid(smallFont, label, color);
+            SDL_Texture *labelTexture = SDL_CreateTextureFromSurface(renderer, labelSurface);
+
+            int labelWidth, labelHeight;
+            SDL_QueryTexture(labelTexture, NULL, NULL, &labelWidth, &labelHeight);
+
+            SDL_Rect labelRect = {960 + CARD_WIDTH / 2 - labelWidth / 2, 30 + 120 * i + CARD_HEIGHT / 2 - labelHeight / 2, labelWidth, labelHeight};
+            SDL_RenderCopy(renderer, labelTexture, NULL, &labelRect);
+
+            SDL_FreeSurface(labelSurface);
+            SDL_DestroyTexture(labelTexture);
+        }
+
+
         int result = render_cards(renderer, columns, foundations, cardTextures);
         if (result != 0)
             return;
